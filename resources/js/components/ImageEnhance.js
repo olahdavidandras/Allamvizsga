@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 axios.defaults.baseURL = 'http://localhost:8000';
-axios.defaults.withCredentials = true;  // Engedélyezze a hitelesítési adatok küldését
+axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 

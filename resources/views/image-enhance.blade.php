@@ -43,7 +43,7 @@
                 success: function (response) {
                     $('#loading').hide();
                     if (response.prediction_id) {
-                        checkResult(response.prediction_id);  // Prediction ID alapján ellenőrzünk
+                        checkResult(response.prediction_id);
                     } else {
                         $('#result').html('<p>Hiba történt!</p>');
                     }
@@ -69,7 +69,7 @@
                             let outputImage = Array.isArray(data.output) ? data.output[0] : data.output;
                             $('#result').html('<h3>Eredmény:</h3><img src="' + outputImage + '" width="400">');
                         } else if (data.status === 'processing') {
-                            checkResult(predictionId);  // Újrapróbálkozás, ha még feldolgozás alatt van
+                            checkResult(predictionId);
                         } else {
                             $('#result').html('<p>Nem sikerült a feldolgozás.</p>');
                         }
@@ -79,7 +79,7 @@
                         handleError(xhr);
                     }
                 });
-            }, 5000); // 5 másodpercenként újrapróbálkozás
+            }, 5000);
         }
 
         function handleError(xhr) {
@@ -101,7 +101,7 @@
         $('#enhance-button').click(function () {
             let imageUrl = $('#enhance-image-url').val();
             if (imageUrl) {
-                sendRequest(imageUrl, 'gfpgan'); // Képjavító API
+                sendRequest(imageUrl, 'gfpgan');
             } else {
                 alert('Adj meg egy kép URL-t!');
             }
@@ -110,7 +110,7 @@
         $('#colorize-button').click(function () {
             let imageUrl = $('#colorize-image-url').val();
             if (imageUrl) {
-                sendRequest(imageUrl, 'ddcolor'); // Színező API
+                sendRequest(imageUrl, 'ddcolor');
             } else {
                 alert('Adj meg egy fekete-fehér kép URL-t!');
             }

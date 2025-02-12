@@ -15,7 +15,7 @@ class ImageEnhanceController extends Controller
     public function enhance(Request $request)
     {
         $imageUrl = $request->input('image_url');
-        $apiType = $request->input('api_type'); // API típus: 'gfpgan' vagy 'ddcolor'
+        $apiType = $request->input('api_type');
 
         if (!$imageUrl || !$apiType) {
             return response()->json(['error' => 'Hiányzó kép URL vagy API típus'], 400);
@@ -23,7 +23,6 @@ class ImageEnhanceController extends Controller
 
         $apiKey = env('REPLICATE_API_KEY');
 
-        // ✅ Frissített API verziók
         $apiVersions = [
             'gfpgan' => '0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c',
             'ddcolor' => 'ca494ba129e44e45f661d6ece83c4c98a9a7c774309beca01429b58fce8aa695'
@@ -31,7 +30,7 @@ class ImageEnhanceController extends Controller
 
         $input = ($apiType === 'gfpgan')
             ? ['img' => $imageUrl, 'scale' => 2]
-            : ['image' => $imageUrl]; // DDColor esetén 'image'
+            : ['image' => $imageUrl];
 
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $apiKey,
@@ -50,7 +49,7 @@ class ImageEnhanceController extends Controller
 
         $data = $response->json();
         return response()->json([
-            'prediction_id' => $data['id'],  // Prediction ID szükséges a státusz lekérdezéséhez
+            'prediction_id' => $data['id'],
             'status_url' => $data['urls']['get']
         ]);
     }
@@ -68,7 +67,7 @@ class ImageEnhanceController extends Controller
 
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $apiKey,
-        ])->get($statusUrl); // GET kérés a státusz lekérdezéséhez
+        ])->get($statusUrl);
 
         if ($response->failed()) {
             return response()->json([
