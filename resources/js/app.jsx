@@ -12,4 +12,10 @@ import './bootstrap';
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-import './components/Example';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ImageEnhance from './components/ImageEnhance';
+
+if (document.getElementById('app')) {
+    ReactDOM.render(<ImageEnhance />, document.getElementById('app'));
+}

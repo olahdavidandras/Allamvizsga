@@ -5,8 +5,6 @@ axios.defaults.baseURL = 'http://localhost:8000';
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-
-
 const ImageEnhance = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [loading, setLoading] = useState(false);
@@ -18,7 +16,6 @@ const ImageEnhance = () => {
             alert('Adj meg egy kép URL-t!');
             return;
         }
-
         setLoading(true);
         setResult(null);
         setError(null);

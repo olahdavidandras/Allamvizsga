@@ -5,7 +5,10 @@
 use App\Http\Controllers\ImageEnhanceController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [ImageEnhanceController::class, 'index']);
+// Route::get('/', [ImageEnhanceController::class, 'index']);
+Route::get('/', function () {
+    return view('image');
+});
 Route::post('/enhance', [ImageEnhanceController::class, 'enhance']);
 Route::post('/check-status', [ImageEnhanceController::class, 'checkStatus']);
 
