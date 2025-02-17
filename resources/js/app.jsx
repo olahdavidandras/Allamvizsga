@@ -13,9 +13,9 @@ import './bootstrap';
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import ImageEnhance from './components/ImageEnhance';
 
-if (document.getElementById('app')) {
-    ReactDOM.render(<ImageEnhance />, document.getElementById('app'));
-}
+const container = document.getElementById('app');
+const root = createRoot(container);
+root.render(<ImageEnhance />);
