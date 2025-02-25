@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 
 
-Route::get('/', [ImageEnhanceController::class, 'index']);
-// Route::get('/', function () {
-//     return view('image');
-// });
+// Route::get('/', [ImageEnhanceController::class, 'index']);
+Route::get('/', function () {
+    return view('image');
+});
 Route::post('/enhance', [ImageEnhanceController::class, 'enhance']);
 Route::post('/check-status', [ImageEnhanceController::class, 'checkStatus']);
 Route::get('/post', [PostController::class, 'index'])->name('post.index');

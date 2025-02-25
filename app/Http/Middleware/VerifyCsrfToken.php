@@ -8,7 +8,9 @@ class VerifyCsrfToken extends Middleware
 {
     protected $except = [
         '/enhance',
-        '/checkStatus'
+        '/check-status',
+        '/upload-image'
     ];
+    
 }
 

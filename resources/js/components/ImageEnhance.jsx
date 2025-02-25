@@ -31,7 +31,10 @@ const ImageEnhance = () => {
             const response = await axios.post('/enhance', {
                 image_url: imageUrl,
                 api_type: apiType
+            }, {
+                withCredentials: true
             });
+            
 
             if (response.data.prediction_id) {
                 checkStatus(response.data.prediction_id);
@@ -44,11 +47,12 @@ const ImageEnhance = () => {
             setError(err.response?.data?.error || 'Hiba történt a kérés során.');
             setLoading(false);
         }
+        
     };
 
     const checkStatus = async (predictionId) => {
         try {
-            const response = await axios.post('checkStatus', { prediction_id: predictionId });
+            const response = await axios.post('/check-status', { prediction_id: predictionId });
             if (response.data.status === 'succeeded' && response.data.output) {
                 const outputImage = Array.isArray(response.data.output) ? response.data.output[0] : response.data.output;
                 setResult(outputImage);
@@ -67,6 +71,7 @@ const ImageEnhance = () => {
     };
 
     return (
+        
         <div className="max-w-md mx-auto p-4">
             <h2 className="text-xl font-bold mb-4">Képjavító API (GFPGAN)</h2>
             <input

@@ -93,15 +93,17 @@ class ImageEnhanceController extends Controller
             $request->validate([
                 'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
+
             $post = Post::create(['title' => 'Uploaded Image']);
             $post->addMediaFromRequest('image')->toMediaCollection('images');
 
-            return response()->json(['url' => asset($post->getFirstMediaUrl('images'))]);
+            return response()->json(['url' => asset('storage/' . $post->getFirstMedia('images')->id . '/' . $post->getFirstMedia('images')->file_name)]);
         } catch (\Exception $e) {
             Log::error('Feltöltési hiba: ' . $e->getMessage());
             return response()->json(['error' => 'Feltöltési hiba', 'message' => $e->getMessage()], 500);
         }
     }
+
     
 
 }
