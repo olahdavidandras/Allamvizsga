@@ -13,11 +13,9 @@ if (csrfToken) {
 const ImageEnhance = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imageId, setImageId] = useState(null);
-    const [enhancedImageUrl, setEnhancedImageUrl] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [enhancedImages, setEnhancedImages] = useState({ gfpgan: '', ddcolor: '' });
+    const [loading, setLoading] = useState({ gfpgan: false, ddcolor: false });
     const [error, setError] = useState(null);
-    const [result, setResult] = useState(null);
-
 
     const handleFileChange = (e) => {
         setImageFile(e.target.files[0]);
@@ -54,48 +52,44 @@ const ImageEnhance = () => {
             return;
         }
 
-        setLoading(true);
+        setLoading(prev => ({ ...prev, [apiType]: true }));
         setError(null);
 
         try {
             const response = await axios.post('/enhance', { image_id: imageId, api_type: apiType });
             if (response.data.prediction_id) {
-                checkStatus(response.data.prediction_id);
+                checkStatus(response.data.prediction_id, apiType);
             } else {
                 setError('Hiba történt!');
-                setLoading(false);
+                setLoading(prev => ({ ...prev, [apiType]: false }));
             }
         } catch (err) {
             setError(err.response?.data?.error || 'Hiba történt a kérés során.');
-            setLoading(false);
+            setLoading(prev => ({ ...prev, [apiType]: false }));
         }
     };
 
-    const checkStatus = async (predictionId) => {
+    const checkStatus = async (predictionId, apiType) => {
         try {
             const response = await axios.post('/check-status', { prediction_id: predictionId });
-    
-            console.log('API válasz:', response.data);
-    
+
+            console.log(`API válasz (${apiType}):`, response.data);
+
             if (response.data.status === "processing") {
-                setTimeout(() => checkStatus(predictionId), 3000);
+                setTimeout(() => checkStatus(predictionId, apiType), 3000);
             } else if (response.data.image_url) {
-                setEnhancedImageUrl(response.data.image_url);
-                setLoading(false);
+                setEnhancedImages(prev => ({ ...prev, [apiType]: response.data.image_url }));
+                setLoading(prev => ({ ...prev, [apiType]: false }));
             } else {
                 setError('Nem sikerült a feldolgozás.');
-                setLoading(false);
+                setLoading(prev => ({ ...prev, [apiType]: false }));
             }
         } catch (error) {
-            console.error("Hiba történt:", error);
+            console.error(`Hiba (${apiType}):`, error);
             setError(`Hiba: ${error.response?.data?.error || error.message}`);
-            setLoading(false);
+            setLoading(prev => ({ ...prev, [apiType]: false }));
         }
     };
-    
-    
-    
-    
 
     return (
         <div className="max-w-md mx-auto p-4">
@@ -103,11 +97,33 @@ const ImageEnhance = () => {
             <input type="file" onChange={handleFileChange} className="border p-2 w-full mb-2" />
             <button onClick={uploadImage} className="bg-green-500 text-white px-4 py-2 rounded w-full">Feltöltés</button>
 
-            <h2 className="text-xl font-bold mt-6">Képjavító API (GFPGAN)</h2>
-            <button onClick={() => enhanceImage('gfpgan')} className="bg-blue-500 text-white px-4 py-2 rounded w-full">Képjavítás</button>
+            <h2 className="text-xl font-bold mt-6">Képjavító API-k</h2>
+            
+            <button onClick={() => enhanceImage('gfpgan')} className="bg-blue-500 text-white px-4 py-2 rounded w-full mt-2">
+                Képjavítás (GFPGAN)
+            </button>
 
-            {loading && <p className="mt-4 text-gray-600">Feldolgozás...</p>}
-            {enhancedImageUrl && <div className="mt-4"><h3 className="font-semibold">Eredmény:</h3><img src={enhancedImageUrl} alt="Eredmény" className="w-full rounded" /></div>}
+            <button onClick={() => enhanceImage('ddcolor')} className="bg-purple-500 text-white px-4 py-2 rounded w-full mt-2">
+                Színezés (DDColor)
+            </button>
+
+            {loading.gfpgan && <p className="mt-4 text-gray-600">GFPGAN feldolgozás...</p>}
+            {loading.ddcolor && <p className="mt-4 text-gray-600">DDColor feldolgozás...</p>}
+
+            {enhancedImages.gfpgan && (
+                <div className="mt-4">
+                    <h3 className="font-semibold">GFPGAN Eredmény:</h3>
+                    <img src={enhancedImages.gfpgan} alt="GFPGAN eredmény" className="w-full rounded" />
+                </div>
+            )}
+
+            {enhancedImages.ddcolor && (
+                <div className="mt-4">
+                    <h3 className="font-semibold">DDColor Eredmény:</h3>
+                    <img src={enhancedImages.ddcolor} alt="DDColor eredmény" className="w-full rounded" />
+                </div>
+            )}
+
             {error && <div className="mt-4 text-red-500"><p>{error}</p></div>}
         </div>
     );
