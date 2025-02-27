@@ -13,11 +13,13 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'replicate' => [
+        'api_token' => env('REPLICATE_API_TOKEN'),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
-
+    
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
