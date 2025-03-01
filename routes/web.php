@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReplicateController;
 use App\Services\Replicate;
+use App\Http\Controllers\AuthController;
 
 
 
@@ -24,9 +25,5 @@ Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->na
 
 Route::post('/APIEnhance', [ReplicateController::class, 'enhanceImage']);
 
-// Route::get('/', function () {
-// $token=env('REPLICATE_API_TOKEN');
-// $replicate = new Replicate($token);
-// $output= $replicate->run('0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c',
-// )
-// });
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
