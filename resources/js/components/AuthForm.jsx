@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function AuthForm({ isLogin }) {
-    const [formData, setFormData] = useState({ username: "", email: "", password: "" });
+    const [formData, setFormData] = useState({ name: "", email: "", password: "" });
     const [message, setMessage] = useState("");
 
     const handleChange = (e) => {
@@ -17,7 +17,7 @@ export default function AuthForm({ isLogin }) {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || ""
                 },
                 body: JSON.stringify(formData),
             });
@@ -37,7 +37,7 @@ export default function AuthForm({ isLogin }) {
         <div>
             <h2>{isLogin ? "Bejelentkezés" : "Regisztráció"}</h2>
             <form onSubmit={handleSubmit}>
-                {!isLogin && <input type="text" name="username" placeholder="Felhasználónév" onChange={handleChange} required />}
+                {!isLogin && <input type="text" name="name" placeholder="Név" onChange={handleChange} required />} 
                 <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
                 <input type="password" name="password" placeholder="Jelszó" onChange={handleChange} required />
                 <button type="submit">{isLogin ? "Bejelentkezés" : "Regisztráció"}</button>
