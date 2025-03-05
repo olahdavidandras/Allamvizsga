@@ -37,6 +37,7 @@ const ImageEnhance = () => {
 
             if (response.data.image_id) {
                 setImageId(response.data.image_id);
+                console.log(response.data.image_id);
                 alert('Kép feltöltve!');
             } else {
                 throw new Error('Hibás válasz a szervertől.');

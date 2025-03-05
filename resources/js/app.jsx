@@ -1,5 +1,3 @@
-// resources/js/app.jsx
-
 import './bootstrap';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -9,9 +7,9 @@ import AuthForm from './components/AuthForm';
 const App = () => {
     return (
         <div>
-            <AuthForm isLogin={false} /> {/* Regisztráció */}
-            <AuthForm isLogin={true} /> {/* Bejelentkezés */}
-            <ImageEnhance /> {/* Eddigi komponensed */}
+            <AuthForm isLogin={false} /> 
+            <AuthForm isLogin={true} /> 
+            <ImageEnhance />
         </div>
     );
 };

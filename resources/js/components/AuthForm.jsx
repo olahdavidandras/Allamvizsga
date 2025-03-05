@@ -1,4 +1,3 @@
-// resources/js/components/AuthForm.jsx
 import { useState } from "react";
 
 export default function AuthForm({ isLogin }) {
