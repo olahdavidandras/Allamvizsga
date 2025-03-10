@@ -10,7 +10,7 @@ export default function AuthForm({ isLogin }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = isLogin ? "/login" : "/register";
+        const url = isLogin ? "/api/login" : "/api/register";
 
         try {
             const response = await fetch(url, {

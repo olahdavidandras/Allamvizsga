@@ -25,5 +25,5 @@ Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->na
 
 Route::post('/APIEnhance', [ReplicateController::class, 'enhanceImage']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Route::post('/register', [AuthController::class, 'register']);
+// Route::post('/login', [AuthController::class, 'login']);
