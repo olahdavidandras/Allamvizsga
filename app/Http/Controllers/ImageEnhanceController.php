@@ -121,19 +121,29 @@ class ImageEnhanceController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'title' => 'required|string|max:255',
+                'content' => 'required|string|max:255',
             ]);
-
-            $post = Post::create(['title' => 'Uploaded Image']);
+    
+            $post = Post::create([
+                'title' => $request->title, 
+                'content' => $request->content
+            ]);            
+    
             $media = $post->addMediaFromRequest('image')->toMediaCollection('images');
-
+    
+            $imageUrl = $media->getUrl();
+            $post->update(['image' => $imageUrl]);
+    
             return response()->json([
                 'image_id' => $post->id,
-                'url' => $media->getUrl()
+                'url' => $imageUrl
             ]);
         } catch (\Exception $e) {
             Log::error('Feltöltési hiba: ' . $e->getMessage());
             return response()->json(['error' => 'Feltöltési hiba', 'message' => $e->getMessage()], 500);
         }
     }
+    
 }
