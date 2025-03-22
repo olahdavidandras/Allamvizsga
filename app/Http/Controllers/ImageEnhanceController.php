@@ -6,6 +6,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ImageEnhanceController extends Controller
 {
@@ -126,24 +127,31 @@ class ImageEnhanceController extends Controller
                 'content' => 'required|string|max:255',
             ]);
     
+            $user = Auth::user();    
+            if (!$user) {
+                return response()->json(['error' => 'Nem vagy bejelentkezve!'], 401);
+            }
+    
             $post = Post::create([
-                'title' => $request->title, 
-                'content' => $request->content
-            ]);            
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_id' => $user->id
+            ]);
     
             $media = $post->addMediaFromRequest('image')->toMediaCollection('images');
     
-            $imageUrl = $media->getUrl();
-            $post->update(['image' => $imageUrl]);
+            $post->update(['image' => $media->getUrl()]);
     
             return response()->json([
                 'image_id' => $post->id,
-                'url' => $imageUrl
+                'url' => $media->getUrl()
             ]);
         } catch (\Exception $e) {
             Log::error('Feltöltési hiba: ' . $e->getMessage());
             return response()->json(['error' => 'Feltöltési hiba', 'message' => $e->getMessage()], 500);
         }
     }
+    
+    
     
 }
