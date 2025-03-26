@@ -5,6 +5,7 @@ use App\Http\Controllers\ImageEnhanceController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\CommentController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -23,4 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 
+    Route::post('/comments', [CommentController::class, 'store']);
+    Route::get('/posts/{postId}/comments', [CommentController::class, 'getPostComments']);
+    Route::get('/users/{userId}/comments', [CommentController::class, 'getUserComments']);
 });
