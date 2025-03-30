@@ -6,6 +6,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ProfileController;
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -27,4 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments', [CommentController::class, 'store']);
     Route::get('/posts/{postId}/comments', [CommentController::class, 'getPostComments']);
     Route::get('/users/{userId}/comments', [CommentController::class, 'getUserComments']);
+
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile-update', [ProfileController::class, 'update']);
+    Route::get('/users/{userId}/profile', [ProfileController::class, 'showUserProfile']);
 });
