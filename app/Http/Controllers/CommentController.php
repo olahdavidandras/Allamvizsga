@@ -2,34 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comment;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreCommentRequest;
+use App\Repositories\CommentRepository;
+use Illuminate\Http\JsonResponse;
 
-class CommentController extends Controller {
-    public function store(Request $request) {
-        $request->validate([
-            'post_id' => 'required|exists:posts,id',
-            'content' => 'required|string|max:1000',
-        ]);
+class CommentController extends Controller
+{
+    protected $commentRepository;
 
-        $comment = Comment::create([
-            'user_id' => Auth::id(),
-            'post_id' => $request->post_id,
-            'content' => $request->content,
-        ]);
+    public function __construct(CommentRepository $commentRepository)
+    {
+        $this->commentRepository = $commentRepository;
+    }
+
+    public function store(StoreCommentRequest $request): JsonResponse
+    {
+        $comment = $this->commentRepository->store($request->validated());
 
         return response()->json($comment, 201);
     }
 
-    public function getPostComments($postId) {
-        $comments = Comment::where('post_id', $postId)->with('user:id,name')->get();
+    public function getPostComments($postId): JsonResponse
+    {
+        $comments = $this->commentRepository->getPostComments($postId);
+
         return response()->json($comments);
     }
 
-    public function getUserComments($userId) {
-        $comments = Comment::where('user_id', $userId)->with('post:id,title')->get();
+    public function getUserComments($userId): JsonResponse
+    {
+        $comments = $this->commentRepository->getUserComments($userId);
+
         return response()->json($comments);
     }
 }
-
