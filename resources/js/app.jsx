@@ -1,19 +1,8 @@
-import './bootstrap';
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import ImageEnhance from './components/ImageEnhance';
-import AuthForm from './components/AuthForm';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Index from "./index.jsx";
 
-const App = () => {
-    return (
-        <div>
-            <AuthForm isLogin={false} /> 
-            <AuthForm isLogin={true} /> 
-            <ImageEnhance />
-        </div>
-    );
-};
+const root = ReactDOM.createRoot(document.getElementById("app"));
+root.render(<Index />);
 
-const container = document.getElementById('app');
-const root = createRoot(container);
-root.render(<App />);
+

@@ -14,9 +14,9 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    // Route::get('/user', function (Request $request) {
-    //     return $request->user();
-    // });
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
     Route::post('/enhance', [ImageEnhanceController::class, 'enhance']);
     Route::post('/check-status', [ImageEnhanceController::class, 'checkStatus']);
 
