@@ -39,7 +39,7 @@ const Login = ({ setUser }) => {
       if (!userRes.ok) throw new Error('Felhasználó lekérése sikertelen');
   
       const userData = await userRes.json();
-      setUser(userData);
+      setUser({ ...userData, token });
       navigate('/');
     } catch (err) {
       console.error(err);

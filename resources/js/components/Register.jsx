@@ -1,45 +1,58 @@
 import React, { useState } from 'react';
-// import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import axios from '../axios';
 
-const Register = ({ setUser }) => {
+const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [password_confirmation, setPasswordConfirmation] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     try {
-      await axios.get('/sanctum/csrf-cookie');
-
-      const response = await axios.post('/register', {
-        name,
-        email,
-        password,
-        password_confirmation,
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          password_confirmation: passwordConfirmation,
+        }),
       });
-      
-      if (response.status === 201 || response.status === 200) {
-        const userResponse = await axios.get('/user'); 
-        setUser(userResponse.data);
-        navigate('/');
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Sikertelen regisztráció!');
       }
-      
+
+      setSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (err) {
-      setError('Sikertelen regisztráció! Ellenőrizd az adatokat.');
+      console.error(err);
+      setError(err.message || 'Sikertelen regisztráció!');
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <h2 className="text-2xl font-semibold mb-4">Regisztráció</h2>
+
       {error && <p className="text-red-600 mb-2">{error}</p>}
+      {success && <p className="text-green-600 mb-2">{success}</p>}
+
       <form onSubmit={handleRegister} className="flex flex-col gap-3 w-80">
         <input
           type="text"
@@ -68,7 +81,7 @@ const Register = ({ setUser }) => {
         <input
           type="password"
           placeholder="Jelszó megerősítése"
-          value={password_confirmation}
+          value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
           className="border p-2 rounded"
           required

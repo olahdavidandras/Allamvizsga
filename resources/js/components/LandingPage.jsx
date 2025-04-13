@@ -7,13 +7,24 @@ const LandingPage = ({ user, setUser }) => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/logout');
+      const res = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
+      });
+  
+      if (!res.ok) {
+        throw new Error('Sikertelen kijelentkezés');
+      }
+  
       setUser(null);
       navigate('/');
     } catch (error) {
       console.error('Hiba kijelentkezés közben', error);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
