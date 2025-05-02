@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from '../axios';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -16,33 +17,18 @@ const Register = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          password_confirmation: passwordConfirmation,
-        }),
+      await axios.post('/register', {
+        name,
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Sikertelen regisztráció!');
-      }
-
       setSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Sikertelen regisztráció!');
+      setError(err.response?.data?.message || 'Sikertelen regisztráció!');
     }
   };
 

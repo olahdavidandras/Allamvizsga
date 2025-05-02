@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Képjavítás és Színezés</title>
     @viteReactRefresh
-    @vite(['resources/js/app.jsx', 'resources/css/app.css'])
-</head>
+    @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    </head>
 <body>
     <div id="app"></div>
 </body>

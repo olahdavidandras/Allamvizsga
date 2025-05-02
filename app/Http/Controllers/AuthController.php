@@ -35,8 +35,9 @@ class AuthController extends Controller {
 
     public function logout(Request $request) {
         $this->authRepository->logout();
-
+    
         return response()->json(['message' => 'Sikeres kijelentkezés!'], 200);
     }
+    
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../axios';
 import { useNavigate } from 'react-router-dom';
 
 const Login = ({ setUser }) => {
@@ -11,43 +11,26 @@ const Login = ({ setUser }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     try {
-      const loginRes = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      if (!loginRes.ok) throw new Error('Hibás bejelentkezés');
-  
-      const loginData = await loginRes.json();
-      const token = loginData.token;
+      const loginRes = await axios.post('/login', { email, password });
+      const token = loginRes.data.token;
+
       localStorage.setItem('token', token);
-  
-      const userRes = await fetch('/api/user', {
-        method: 'GET',
+
+      const userRes = await axios.get('/user', {
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
         },
       });
-  
-      if (!userRes.ok) throw new Error('Felhasználó lekérése sikertelen');
-  
-      const userData = await userRes.json();
-      setUser({ ...userData, token });
+
+      setUser({ ...userRes.data, token });
       navigate('/');
     } catch (err) {
       console.error(err);
       setError('Hibás bejelentkezési adatok!');
     }
   };
-  
-  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
