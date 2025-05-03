@@ -24,6 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
     Route::delete('/post/{post}/delete-image', [PostController::class, 'deleteImage'])->name('post.deleteImage');
 
+    Route::get('/my-posts', function (Request $request) {
+        return $request->user()->posts()->with('media')->get();
+    });
+    
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 
     Route::post('/comments', [CommentController::class, 'store']);

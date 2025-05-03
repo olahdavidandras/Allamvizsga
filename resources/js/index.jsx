@@ -4,8 +4,8 @@ import axios from "./axios";
 import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Gallery from "./components/Gallery";
 import '../css/app.css';
-
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -39,6 +39,7 @@ const Index = () => {
         <Route path="/" element={<LandingPage user={user} setUser={setUser} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
+        <Route path="/gallery" element={<Gallery user={user} />} />
       </Routes>
     </Router>
   );

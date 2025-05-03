@@ -20,6 +20,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Profile::class);
     }
+    public function posts()
+{
+    return $this->hasMany(Post::class);
+}
+
 }
 
 
