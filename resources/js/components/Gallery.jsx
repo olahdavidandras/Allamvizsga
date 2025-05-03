@@ -1,8 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../axios';
+import PostCard from './PostCard'; 
 
 const Gallery = () => {
   const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState(null);
+
+  const fetchUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await axios.get('/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+      setUser(res.data);
+    } catch (err) {
+      console.error('Felhasználó lekérése sikertelen:', err);
+    }
+  };
 
   const fetchPosts = async () => {
     const token = localStorage.getItem('token');
@@ -14,7 +33,6 @@ const Gallery = () => {
         },
       });
 
-      console.log("Kapott posztok:", res.data);
       setPosts(res.data);
     } catch (error) {
       console.error('Hiba a képek lekérésekor:', error);
@@ -23,24 +41,18 @@ const Gallery = () => {
   };
 
   useEffect(() => {
+    fetchUser();
     fetchPosts();
   }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Galéria</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {Array.isArray(posts) && posts.map((post) => (
-          <div key={post.id} className="border rounded p-2 bg-white shadow">
-            <h3 className="font-semibold">{post.title}</h3>
-            {post.image ? (
-              <img src={post.image} alt={post.title} className="w-full h-auto mt-2 rounded" />
-            ) : (
-              <p>Nincs kép</p>
-            )}
-          </div>
-        ))}
-      </div>
+    <div className="p-6">
+      <h2 className="text-3xl font-bold mb-6">Galéria</h2>
+      {posts.length > 0 ? (
+        posts.map((post) => <PostCard key={post.id} post={post} user={user} />)
+      ) : (
+        <p className="text-gray-500">Nincsenek képek megjelenítve.</p>
+      )}
     </div>
   );
 };
