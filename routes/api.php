@@ -22,11 +22,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/post', [PostController::class, 'index'])->name('post.index');
     Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
-    Route::delete('/post/{post}/delete-image', [PostController::class, 'deleteImage'])->name('post.deleteImage');
+    Route::delete('/post/{post}', [PostController::class, 'destroy'])->name('post.destroy');
+
 
     Route::get('/my-posts', function (Request $request) {
         return $request->user()->posts()->with('media')->get();
     });
+    Route::put('/post/{post}', [PostController::class, 'update']);
+    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
     
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 

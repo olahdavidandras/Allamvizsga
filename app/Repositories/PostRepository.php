@@ -27,4 +27,15 @@ class PostRepository
             $post->clearMediaCollection('images');
         }
     }
+
+    public function updatePost(Post $post, array $data)
+    {
+        $post->update($data);
+        return $post;
+    }
+
+    public function deletePost(Post $post)
+    {
+        $post->delete();
+    }
 }
