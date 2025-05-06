@@ -38,4 +38,17 @@ class PostRepository
     {
         $post->delete();
     }
+
+    public function togglePublic(Post $post)
+    {
+        $post->is_public = !$post->is_public;
+        $post->save();
+        return $post;
+    }
+
+    public function getPublicPosts()
+    {
+        return Post::where('is_public', true)->with('media')->latest()->get();
+    }
+
 }

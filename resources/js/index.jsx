@@ -6,6 +6,8 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Gallery from "./components/Gallery";
 import UploadImage from "./components/UploadImage";
+import PublicGallery from './components/PublicGallery';
+
 import '../css/app.css';
 
 const Index = () => {
@@ -42,6 +44,7 @@ const Index = () => {
         <Route path="/register" element={<Register setUser={setUser} />} />
         <Route path="/gallery" element={<Gallery user={user} />} />
         <Route path="/upload" element={<UploadImage user={user}/>} />
+        <Route path="/public-gallery" element={<PublicGallery  user={user} />} />
       </Routes>
     </Router>
   );

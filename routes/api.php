@@ -30,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::put('/post/{post}', [PostController::class, 'update']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+    Route::get('/public-posts', [PostController::class, 'publicPosts']);
+    Route::post('/toggle-public', [PostController::class, 'togglePublic']);
+
     
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from '../axios';
 import { useNavigate } from 'react-router-dom';
 
-const Gallery = () => {
+const Gallery = ({ user }) => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [newComments, setNewComments] = useState({});
@@ -143,16 +143,38 @@ const Gallery = () => {
     }
   };
 
+  const handleTogglePublic = async (postId) => {
+    try {
+      await axios.post('/toggle-public', { post_id: postId }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+      fetchPosts();
+    } catch (err) {
+      console.error('Hiba a megosztás módosításakor:', err);
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Galéria</h2>
-        <button
-          onClick={() => navigate('/upload')}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Kép feltöltése
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate('/upload')}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Kép feltöltése
+          </button>
+          <button
+            onClick={() => navigate('/public-gallery')}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Publikus galéria
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -185,7 +207,7 @@ const Gallery = () => {
               <p className="text-red-500">Nincs kép</p>
             )}
 
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               <button onClick={() => handleEnhance(post.id, 'gfpgan')} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                 {loading[post.id] === 'gfpgan' ? 'Feldolgozás...' : 'GFPGAN javítás'}
               </button>
@@ -194,6 +216,9 @@ const Gallery = () => {
               </button>
               <button onClick={() => handleEdit(post)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Szerkesztés</button>
               <button onClick={() => handleDelete(post.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Törlés</button>
+              <button onClick={() => handleTogglePublic(post.id)} className="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800">
+                {post.is_public ? 'Megosztás megszüntetése' : 'Megosztás'}
+              </button>
             </div>
 
             <h4 className="text-md font-medium mb-1">Kommentek:</h4>
