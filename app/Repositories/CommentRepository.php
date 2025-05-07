@@ -25,4 +25,9 @@ class CommentRepository
     {
         return Comment::where('user_id', $userId)->with('post:id,title')->get();
     }
+
+    public function deleteComment(Comment $comment): bool
+    {
+        return $comment->delete();
+    }
 }

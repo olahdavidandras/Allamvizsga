@@ -65,6 +65,20 @@ const Gallery = ({ user }) => {
     }
   };
 
+  const handleDeleteComment = async (commentId, postId) => {
+    try {
+      await axios.delete(`/comments/${commentId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+      fetchComments(postId);
+    } catch (err) {
+      console.error('Hiba a komment törlésekor:', err);
+    }
+  };
+
   const handleEnhance = async (postId, apiType) => {
     setLoading(prev => ({ ...prev, [postId]: apiType }));
     try {
@@ -225,8 +239,9 @@ const Gallery = ({ user }) => {
             {comments[post.id]?.length ? (
               <ul className="mb-2">
                 {comments[post.id].map((c) => (
-                  <li key={c.id} className="text-sm text-gray-800 border-b py-1">
-                    <strong>{c.user?.name}:</strong> {c.content}
+                  <li key={c.id} className="text-sm text-gray-800 border-b py-1 flex justify-between items-center">
+                    <span><strong>{c.user?.name}:</strong> {c.content}</span>
+                    <button onClick={() => handleDeleteComment(c.id, post.id)} className="text-red-500 text-xs ml-2">Törlés</button>
                   </li>
                 ))}
               </ul>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCommentRequest;
+use App\Http\Requests\Comment\StoreCommentRequest;
+use App\Http\Requests\Comment\DeleteCommentRequest;
 use App\Repositories\CommentRepository;
 use Illuminate\Http\JsonResponse;
+use App\Models\Comment;
 
 class CommentController extends Controller
 {
@@ -20,6 +22,13 @@ class CommentController extends Controller
         $comment = $this->commentRepository->store($request->validated());
 
         return response()->json($comment, 201);
+    }
+
+    
+    public function destroy(DeleteCommentRequest $request, Comment $comment)
+    {
+        $this->commentRepository->deleteComment($comment);
+        return response()->json(['message' => 'Komment sikeresen törölve.']);
     }
 
     public function getPostComments($postId): JsonResponse
