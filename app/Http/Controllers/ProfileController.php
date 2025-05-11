@@ -18,10 +18,20 @@ class ProfileController extends Controller
     public function update(UpdateProfileRequest $request)
     {
         $userId = Auth::id();
-        $profile = $this->profileRepository->updateOrCreate($userId, $request->validated());
-
+        $data   = $request->validated();
+    
+        if ($request->hasFile('profile_picture')) {
+            $path = $request->file('profile_picture')
+                            ->store('profile_images', 'public');
+            $data['profile_picture'] = '/storage/' . $path;
+        }
+    
+        $profile = $this->profileRepository
+                        ->updateOrCreate($userId, $data);
+    
         return response()->json($profile, 200);
     }
+    
 
     public function show()
     {
