@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const PublicGallery = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [newComments, setNewComments] = useState({});
+  const navigate = useNavigate();
+
 
   const fetchComments = async (postId) => {
     const token = localStorage.getItem('token');
@@ -36,8 +40,6 @@ const PublicGallery = () => {
       console.error('Hiba a publikus posztok lekérésekor:', err);
     }
   };
-  
-  
 
   useEffect(() => {
     fetchPublicPosts();
@@ -63,48 +65,60 @@ const PublicGallery = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-6">Publikus Galéria</h2>
+    
+    <div className="public-gallery-container">
+      <div className="gallery-header">
+        <h2 className="gallery-title">Galéria</h2>
+        <div className="gallery-button-group">
+          <button onClick={() => navigate('/')} className="btn btn-home">Kezdőlap</button>
+          <button onClick={() => navigate('/upload')} className="btn btn-upload">Kép feltöltése</button>
+          <button onClick={() => navigate('/gallery')} className="btn btn-public">Galéria</button>
+          <button onClick={() => navigate('/profile')} className="btn btn-profile">Saját profil</button>
+        </div>
+      </div>
+      <h2 className="public-gallery-title">Publikus Galéria</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <div key={post.id} className="border rounded p-4 bg-white shadow">
-            <h3 className="text-lg font-semibold">{post.title}</h3>
-            <p className="text-sm text-gray-600 mb-2">{post.content}</p>
+      <div className="public-gallery-grid">
+        {posts.map(post => (
+          <div key={post.id} className="public-post-card">
+            <h3 className="post-title">{post.title}</h3>
+            <p className="post-content">{post.content}</p>
 
-            {post.image ? (
-              <img src={post.image} alt={post.title} className="w-full h-auto mb-3 rounded" />
-            ) : (
-              <p className="text-red-500">Nincs kép</p>
-            )}
+            {post.image
+              ? <img src={post.image} alt={post.title} className="post-image" />
+              : <p className="no-image">Nincs kép</p>
+            }
 
-            <h4 className="text-md font-medium mb-1">Kommentek:</h4>
-            {comments[post.id]?.length ? (
-              <ul className="mb-2">
-                {comments[post.id].map((c) => (
-                  <li key={c.id} className="text-sm text-gray-800 border-b py-1">
-                    <strong>{c.user?.name}:</strong> {c.content}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 text-sm">Nincsenek kommentek.</p>
-            )}
+            <div className="comments-section">
+              <h4>Kommentek:</h4>
+              {comments[post.id]?.length
+                ? (
+                  <ul className="comment-list">
+                    {comments[post.id].map(c => (
+                      <li key={c.id} className="comment-item">
+                        <strong>{c.user?.name}:</strong> {c.content}
+                      </li>
+                    ))}
+                  </ul>
+                )
+                : <p className="no-comments">Nincsenek kommentek.</p>
+              }
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Új komment..."
-                value={newComments[post.id] || ''}
-                onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                className="flex-1 border rounded px-2 py-1 text-sm"
-              />
-              <button
-                onClick={() => handleAddComment(post.id)}
-                className="bg-gray-800 text-white text-sm px-3 py-1 rounded hover:bg-gray-900"
-              >
-                Küldés
-              </button>
+              <div className="new-comment-form">
+                <input
+                  type="text"
+                  placeholder="Új komment..."
+                  value={newComments[post.id] || ''}
+                  onChange={e => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                  className="new-comment-input"
+                />
+                <button
+                  onClick={() => handleAddComment(post.id)}
+                  className="btn btn-comment"
+                >
+                  Küldés
+                </button>
+              </div>
             </div>
           </div>
         ))}

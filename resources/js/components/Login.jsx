@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from '../axios';
 import { useNavigate } from 'react-router-dom';
-
 const Login = ({ setUser }) => {
   const [email, setEmail] = useState('a@a.a');
   const [password, setPassword] = useState('asdasd');
@@ -19,9 +18,7 @@ const Login = ({ setUser }) => {
       localStorage.setItem('token', token);
 
       const userRes = await axios.get('/user', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setUser({ ...userRes.data, token });
@@ -33,16 +30,18 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <h2 className="text-2xl font-semibold mb-4">Bejelentkezés</h2>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      <form onSubmit={handleLogin} className="flex flex-col gap-3 w-80">
+    <div className="login-container">
+      <h2 className="login-title">Bejelentkezés</h2>
+
+      {error && <p className="error-message">{error}</p>}
+
+      <form onSubmit={handleLogin} className="login-form">
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded"
+          className="login-input"
           required
         />
         <input
@@ -50,10 +49,10 @@ const Login = ({ setUser }) => {
           placeholder="Jelszó"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 rounded"
+          className="login-input"
           required
         />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        <button type="submit" className="btn btn-login">
           Bejelentkezés
         </button>
       </form>

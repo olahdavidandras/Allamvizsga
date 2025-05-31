@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from '../axios';
 
 const LandingPage = ({ user, setUser }) => {
   const navigate = useNavigate();
@@ -8,15 +9,12 @@ const LandingPage = ({ user, setUser }) => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:8000/api/logout', {
-        method: 'POST',
+      await axios.post('/logout', null, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
         },
       });
-
-      if (!res.ok) throw new Error('Hiba kijelentkezés közben');
 
       localStorage.removeItem('token');
       setUser(null);
@@ -27,41 +25,31 @@ const LandingPage = ({ user, setUser }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold mb-6">Képjavító Alkalmazás</h1>
+    <div className="landing-container">
+      <h1 className="title">Képjavító Alkalmazás</h1>
 
       {user ? (
-        <div className="text-center">
-          <p className="mb-4">Szia <strong>{user.name}</strong>, be vagy jelentkezve!</p>
-          <div className="flex gap-4 justify-center">
+        <div className="user-info">
+          <p>Szia <strong>{user.name}</strong>, be vagy jelentkezve!</p>
+          <div className="button-group">
             <button
               onClick={() => navigate('/gallery')}
-              className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              className="btn btn-gallery"
             >
               Galéria
             </button>
             <button
               onClick={handleLogout}
-              className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="btn btn-logout"
             >
               Kijelentkezés
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex gap-4">
-          <a
-            href="/login"
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Bejelentkezés
-          </a>
-          <a
-            href="/register"
-            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Regisztráció
-          </a>
+        <div className="button-group">
+          <a href="/login" className="btn btn-login">Bejelentkezés</a>
+          <a href="/register" className="btn btn-register">Regisztráció</a>
         </div>
       )}
     </div>

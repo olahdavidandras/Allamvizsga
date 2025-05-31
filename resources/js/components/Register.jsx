@@ -33,19 +33,19 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <h2 className="text-2xl font-semibold mb-4">Regisztráció</h2>
+    <div className="register-container">
+      <h2 className="register-title">Regisztráció</h2>
 
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      {success && <p className="text-green-600 mb-2">{success}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
 
-      <form onSubmit={handleRegister} className="flex flex-col gap-3 w-80">
+      <form onSubmit={handleRegister} className="register-form">
         <input
           type="text"
           placeholder="Név"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border p-2 rounded"
+          className="register-input"
           required
         />
         <input
@@ -53,7 +53,7 @@ const Register = () => {
           placeholder="Email cím"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded"
+          className="register-input"
           required
         />
         <input
@@ -61,7 +61,7 @@ const Register = () => {
           placeholder="Jelszó"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 rounded"
+          className="register-input"
           required
         />
         <input
@@ -69,10 +69,10 @@ const Register = () => {
           placeholder="Jelszó megerősítése"
           value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
-          className="border p-2 rounded"
+          className="register-input"
           required
         />
-        <button type="submit" className="bg-green-600 text-white p-2 rounded hover:bg-green-700">
+        <button type="submit" className="btn btn-register">
           Regisztráció
         </button>
       </form>

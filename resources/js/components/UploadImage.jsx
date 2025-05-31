@@ -22,51 +22,51 @@ const UploadImage = () => {
     formData.append('image', image);
 
     try {
-      const response = await axios.post('/upload-image', formData, {
+      await axios.post('/upload-image', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
         },
       });
 
       setSuccess('Kép sikeresen feltöltve!');
       setTimeout(() => navigate('/gallery'), 2000);
     } catch (err) {
+      console.error(err);
       setError('Hiba a kép feltöltése során!');
     }
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Képfeltöltés</h2>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      {success && <p className="text-green-600 mb-2">{success}</p>}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="upload-container">
+      <h2 className="upload-title">Képfeltöltés</h2>
+
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
+
+      <form onSubmit={handleSubmit} className="upload-form">
         <input
           type="text"
           placeholder="Cím"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 rounded"
+          className="upload-input"
           required
         />
         <textarea
           placeholder="Leírás"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="border p-2 rounded"
+          className="upload-textarea"
           required
         />
         <input
           type="file"
           onChange={(e) => setImage(e.target.files[0])}
-          className="border p-2 rounded"
+          className="upload-input"
           required
         />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+        <button type="submit" className="btn btn-submit">
           Feltöltés
         </button>
       </form>
