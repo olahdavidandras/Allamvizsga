@@ -12,6 +12,10 @@ const Gallery = ({ user }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
+  
+  /**
+   * Obține comentariile asociate unei postări
+   */
   const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`/posts/${postId}/comments`, {
@@ -23,6 +27,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Obține toate postările utilizatorului și comentariile aferente
+   */
   const fetchPosts = async () => {
     try {
       const res = await axios.get('/my-posts', {
@@ -36,8 +43,12 @@ const Gallery = ({ user }) => {
     }
   };
 
+  // Efect care se execută la montarea componentei
   useEffect(() => { fetchPosts(); }, []);
 
+  /**
+   * Adaugă un comentariu nou la o postare
+   */
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
     if (!content) return;
@@ -52,6 +63,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Șterge un comentariu după ID
+   */
   const handleDeleteComment = async (commentId, postId) => {
     try {
       await axios.delete(`/comments/${commentId}`, {
@@ -63,6 +77,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Trimite o imagine pentru îmbunătățire AI (GFPGAN sau DDColor)
+   */
   const handleEnhance = async (postId, apiType) => {
     setLoading(prev => ({ ...prev, [postId]: apiType }));
     try {
@@ -77,6 +94,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Verifică statusul procesării AI
+   */
   const checkStatus = async (predictionId, postId) => {
     try {
       const res = await axios.post('/check-status', { prediction_id: predictionId }, {
@@ -92,11 +112,17 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Activează modul de editare pentru o postare
+   */
   const handleEdit = (post) => {
     setEditMode(post.id);
     setEditedPost({ title: post.title, content: post.content });
   };
 
+  /**
+   * Salvează modificările unei postări
+   */
   const handleUpdate = async (postId) => {
     try {
       await axios.put(`/post/${postId}`, editedPost, {
@@ -109,6 +135,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Șterge o postare
+   */
   const handleDelete = async (postId) => {
     if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
     try {
@@ -121,6 +150,10 @@ const Gallery = ({ user }) => {
     }
   };
 
+  
+  /**
+   * Comută starea publică a unei postări
+   */
   const handleTogglePublic = async (postId) => {
     try {
       await axios.post('/toggle-public', { post_id: postId }, {
@@ -132,6 +165,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Interfața principală de afișare a postărilor, imaginilor, comentariilor și acțiunilor
+   */
   return (
     <div className="gallery-container">
       <div className="gallery-header">

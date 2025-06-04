@@ -10,6 +10,11 @@ const UploadImage = () => {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
+  /**
+   * La trimiterea formularului, se creează un obiect FormData care conține
+   * informațiile introduse și fișierul selectat. Se trimite cererea POST
+   * către backend cu token-ul Bearer pentru autentificare.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -29,6 +34,7 @@ const UploadImage = () => {
         },
       });
 
+      // La succes, se afișează mesajul și se redirecționează către galerie
       setSuccess('Kép sikeresen feltöltve!');
       setTimeout(() => navigate('/gallery'), 2000);
     } catch (err) {

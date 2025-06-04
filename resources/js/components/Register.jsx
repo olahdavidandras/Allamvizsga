@@ -11,12 +11,18 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
+  /**
+   * Funcția se ocupă cu trimiterea cererii de înregistrare către API.
+   * La succes, afisează un mesaj și redirecționează către pagina principală.
+   * La eșec, se afișează mesajul de eroare.
+   */
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
     try {
+      // Cerere POST către backend cu datele de înregistrare
       await axios.post('/register', {
         name,
         email,
@@ -24,6 +30,7 @@ const Register = () => {
         password_confirmation: passwordConfirmation,
       });
 
+      // La succes, se afișează mesajul și se redirecționează după 2 secunde
       setSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {

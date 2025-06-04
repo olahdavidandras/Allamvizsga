@@ -8,6 +8,10 @@ const PublicGallery = () => {
   const [newComments, setNewComments] = useState({});
   const navigate = useNavigate();
 
+  /**
+   * Funcția care solicită comentariile unui anumit post de la API
+   * și le salvează în starea locală pentru afișare.
+   */
   const fetchComments = async (postId) => {
     const token = localStorage.getItem('token');
     try {
@@ -23,6 +27,10 @@ const PublicGallery = () => {
     }
   };
 
+  /**
+   * Funcția care solicită toate postările publice și, pentru fiecare post,
+   * încarcă și comentariile asociate.
+   */
   const fetchPublicPosts = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -39,10 +47,15 @@ const PublicGallery = () => {
     }
   };
 
+  // La montarea componentei, se solicită postările publice
   useEffect(() => {
     fetchPublicPosts();
   }, []);
 
+  /**
+   * Funcția care adaugă un comentariu nou la un post specificat.
+   * Se resetează câmpul după trimitere și se reîncarcă comentariile.
+   */
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
     if (!content) return;

@@ -3,6 +3,7 @@ import axios from '../axios';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  // Inițializare stări locale pentru biografie, website, imagine și mesaje
   const [bio, setBio] = useState('');
   const [website, setWebsite] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -10,7 +11,10 @@ const Profile = () => {
   const [message, setMessage] = useState('');
     const navigate = useNavigate();
   
-
+  /**
+   * La montarea componentei, se solicită datele profilului curent de la API.
+   * Tokenul de autentificare este extras din localStorage.
+   */
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem('token');
@@ -21,6 +25,7 @@ const Profile = () => {
             Accept: 'application/json',
           },
         });
+        // Se setează datele profilului în stările componentei
         setBio(res.data.bio || '');
         setWebsite(res.data.website || '');
         setPreviewImage(res.data.profile_picture || null);
@@ -28,9 +33,13 @@ const Profile = () => {
         console.error('Hiba a profil betöltésekor:', err);
       }
     };
-    fetchProfile();
+    fetchProfile(); // Apelează funcția imediat după randare
   }, []);
 
+  /**
+   * Funcția care trimite cererea de actualizare a profilului.
+   * Se construiește un obiect FormData cu biografia, website-ul și imaginea selectată.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -50,6 +59,7 @@ const Profile = () => {
           Accept: 'application/json',
         },
       });
+      // Mesaj de succes și actualizare imagine/website în caz de răspuns valid
       setMessage('Profil sikeresen frissítve!');
       if (res.data.profile_picture) {
         setPreviewImage(res.data.profile_picture);
