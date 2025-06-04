@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from '../axios';
 import { useNavigate } from 'react-router-dom';
 
-
 const PublicGallery = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [newComments, setNewComments] = useState({});
   const navigate = useNavigate();
-
 
   const fetchComments = async (postId) => {
     const token = localStorage.getItem('token');
@@ -65,10 +63,9 @@ const PublicGallery = () => {
   };
 
   return (
-    
     <div className="public-gallery-container">
       <div className="gallery-header">
-        <h2 className="gallery-title">Galéria</h2>
+        <h2 className="gallery-title">Publikus Galéria</h2>
         <div className="gallery-button-group">
           <button onClick={() => navigate('/')} className="btn btn-home">Kezdőlap</button>
           <button onClick={() => navigate('/upload')} className="btn btn-upload">Kép feltöltése</button>
@@ -76,7 +73,6 @@ const PublicGallery = () => {
           <button onClick={() => navigate('/profile')} className="btn btn-profile">Saját profil</button>
         </div>
       </div>
-      <h2 className="public-gallery-title">Publikus Galéria</h2>
 
       <div className="public-gallery-grid">
         {posts.map(post => (
@@ -91,27 +87,33 @@ const PublicGallery = () => {
 
             <div className="comments-section">
               <h4>Kommentek:</h4>
-              {comments[post.id]?.length
-                ? (
-                  <ul className="comment-list">
-                    {comments[post.id].map(c => (
-                      <li key={c.id} className="comment-item">
+              {comments[post.id]?.length ? (
+                <ul className="public-comment-list">
+                  {comments[post.id].map(c => (
+                    <li key={c.id} className="public-comment-item">
+                      <img
+                        src={c.user?.profile?.profile_picture || '/default-avatar.png'}
+                        alt="Profilkép"
+                        className="public-comment-avatar"
+                      />
+                      <div className="public-comment-text">
                         <strong>{c.user?.name}:</strong> {c.content}
-                      </li>
-                    ))}
-                  </ul>
-                )
-                : <p className="no-comments">Nincsenek kommentek.</p>
-              }
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="no-comments">Nincsenek kommentek.</p>
+              )}
 
               <div className="new-comment-form">
-                <input
-                  type="text"
-                  placeholder="Új komment..."
-                  value={newComments[post.id] || ''}
-                  onChange={e => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                  className="new-comment-input"
-                />
+<input
+  type="text"
+  placeholder="Új komment..."
+  value={newComments[post.id] || ''}
+  onChange={e => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+  className="new-comment-input"
+/>
                 <button
                   onClick={() => handleAddComment(post.id)}
                   className="btn btn-comment"

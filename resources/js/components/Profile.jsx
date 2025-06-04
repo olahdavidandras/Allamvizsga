@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../axios';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [bio, setBio] = useState('');
@@ -7,6 +8,8 @@ const Profile = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState('');
+    const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -62,6 +65,9 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
+      <div className="gallery-button-group">
+          <button onClick={() => navigate('/gallery')} className="btn btn-public">Vissza</button>
+        </div>
       <h2 className="profile-title">Profil szerkesztése</h2>
       {message && <p className="message-success">{message}</p>}
 

@@ -196,23 +196,39 @@ const Gallery = ({ user }) => {
 
             <div className="comments-section">
               <h4>Kommentek:</h4>
-              {comments[post.id]?.length ? (
+                {comments[post.id]?.length ? (
                 <ul className="comment-list">
-                  {comments[post.id].map((c) => (
-                    <li key={c.id} className="comment-item">
-                      <span className="comment-text"><strong>{c.user?.name}:</strong> {c.content}</span>
-                      <button
-                        onClick={() => handleDeleteComment(c.id, post.id)}
-                        className="comment-delete-button"
-                      >
-                        Törlés
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="no-comments">Nincsenek kommentek.</p>
-              )}
+                {comments[post.id].map((c) => (
+                <li key={c.id} className="comment-item">
+                  <div className="comment-header">
+                  {c.user?.profile?.profile_picture ? (
+                    <img
+                    src={c.user.profile.profile_picture}
+                    alt={c.user.name}
+                    className="comment-avatar"
+            />
+          ) : (
+            <div className="comment-avatar placeholder-avatar">
+              {c.user?.name?.[0] ?? '?'}
+            </div>
+          )}
+          <span className="comment-text">
+            <strong>{c.user?.name}:</strong> {c.content}
+          </span>
+        </div>
+        <button
+          onClick={() => handleDeleteComment(c.id, post.id)}
+          className="comment-delete-button"
+        >
+          Törlés
+        </button>
+      </li>
+    ))}
+  </ul>
+) : (
+  <p className="no-comments">Nincsenek kommentek.</p>
+)}
+
 
               <div className="new-comment-form">
                 <input
