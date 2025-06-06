@@ -15,8 +15,6 @@ const Gallery = ({ user }) => {
   const token = localStorage.getItem('token');
 
   
-
-  
   /**
    * Obține comentariile asociate unei postări
    */
@@ -169,14 +167,6 @@ const Gallery = ({ user }) => {
     }
   };
 
-    const handleImageClick = (post) => {
-    setSelectedPost(post);
-    };
-
-    const handleCloseModal = () => {
-      setSelectedPost(null);
-    };
-
   /**
    * Interfața principală de afișare a postărilor, imaginilor, comentariilor și acțiunilor
    */
@@ -191,123 +181,110 @@ const Gallery = ({ user }) => {
           <button onClick={() => navigate('/profile')} className="btn btn-profile">Saját profil</button>
         </div>
       </div>
+
       <div className="sort-dropdown">
         <label htmlFor="sortSelect">Rendezés:</label>
-      <select
-        onChange={(e) => setSortOption(e.target.value)}
-        className="sort-dropdown"
-      >
-        <option value="created_at-desc">Feltöltés (legújabb elöl)</option>
-        <option value="created_at-asc">Feltöltés (legrégebbi elöl)</option>
-        <option value="title-asc">Név szerint (A-Z)</option>
-        <option value="title-desc">Név szerint (Z-A)</option>
-      </select>
+        <select
+          onChange={(e) => setSortOption(e.target.value)}
+          className="sort-dropdown"
+        >
+          <option value="created_at-desc">Feltöltés (legújabb elöl)</option>
+          <option value="created_at-asc">Feltöltés (legrégebbi elöl)</option>
+          <option value="title-asc">Név szerint (A-Z)</option>
+          <option value="title-desc">Név szerint (Z-A)</option>
+        </select>
       </div>
+
       <div className="gallery-grid">
         {posts.map((post) => (
-          <div key={post.id} className="post-card">
-            {editMode === post.id ? (
-              <div className="edit-section">
-                <input
-                  value={editedPost.title}
-                  onChange={(e) => setEditedPost(prev => ({ ...prev, title: e.target.value }))}
-                  className="edit-input"
-                />
-                <textarea
-                  value={editedPost.content}
-                  onChange={(e) => setEditedPost(prev => ({ ...prev, content: e.target.value }))}
-                  className="edit-textarea"
-                />
-                <button onClick={() => handleUpdate(post.id)} className="btn btn-save">Mentés</button>
-              </div>
-            ) : (
-              <>
-                <h3 className="post-title">{post.title}</h3>
-                <p className="post-content">{post.content}</p>
-              </>
-            )}
-
+          <div key={post.id} className="post-card" onClick={() => {
+            setSelectedPost(post);
+            fetchComments(post.id);
+          }}>
             {post.image ? (
               <img src={post.image} alt={post.title} className="post-image" />
             ) : (
               <p className="no-image">Nincs kép</p>
             )}
-
-            <div className="post-actions">
-              <button
-                onClick={() => handleEnhance(post.id, 'gfpgan')}
-                className="action-button btn-enhance-gfpgan"
-              >
-                {loading[post.id] === 'gfpgan' ? 'Feldolgozás...' : 'GFPGAN javítás'}
-              </button>
-              <button
-                onClick={() => handleEnhance(post.id, 'ddcolor')}
-                className="action-button btn-enhance-ddcolor"
-              >
-                {loading[post.id] === 'ddcolor' ? 'Feldolgozás...' : 'DDColor színezés'}
-              </button>
-              <button onClick={() => handleEdit(post)} className="action-button btn-edit">Szerkesztés</button>
-              <button onClick={() => handleDelete(post.id)} className="action-button btn-delete">Törlés</button>
-              <button onClick={() => handleTogglePublic(post.id)} className="action-button btn-toggle">
-                {post.is_public ? 'Megosztás megszüntetése' : 'Megosztás'}
-              </button>
-            </div>
-
-            <div className="comments-section">
-              <h4>Kommentek:</h4>
-                {comments[post.id]?.length ? (
-                <ul className="comment-list">
-                {comments[post.id].map((c) => (
-                <li key={c.id} className="comment-item">
-                  <div className="comment-header">
-                  {c.user?.profile?.profile_picture ? (
-                    <img
-                    src={c.user.profile.profile_picture}
-                    alt={c.user.name}
-                    className="comment-avatar"
-            />
-          ) : (
-            <div className="comment-avatar placeholder-avatar">
-              {c.user?.name?.[0] ?? '?'}
-            </div>
-          )}
-          <span className="comment-text">
-            <strong>{c.user?.name}:</strong> {c.content}
-          </span>
-        </div>
-        <button
-          onClick={() => handleDeleteComment(c.id, post.id)}
-          className="comment-delete-button"
-        >
-          Törlés
-        </button>
-      </li>
-    ))}
-  </ul>
-) : (
-  <p className="no-comments">Nincsenek kommentek.</p>
-)}
-
-
-              <div className="new-comment-form">
-                <input
-                  type="text"
-                  placeholder="Új komment..."
-                  value={newComments[post.id] || ''}
-                  onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                  className="new-comment-input"
-                />
-                <button
-                  onClick={() => handleAddComment(post.id)}
-                  className="btn btn-comment"
-                >
-                  Küldés
-                </button>
-              </div>
-            </div>
           </div>
         ))}
       </div>
+
+      {selectedPost && (
+        <div className="modal-overlay" onClick={() => setSelectedPost(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedPost(null)}>×</button>
+            <img src={selectedPost.image} alt={selectedPost.title} className="modal-image" />
+            <h3>{selectedPost.title}</h3>
+            <p>{selectedPost.content}</p>
+            <button className="btn btn-edit" onClick={() => navigate(`/edit/${selectedPost.id}`)}>Szerkesztés</button>
+
+            <h4>Kommentek:</h4>
+            {comments[selectedPost.id]?.length ? (
+              <ul className="comment-list">
+                {comments[selectedPost.id].map((c) => (
+                  <li key={c.id} className="comment-item" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid #ddd',
+                    padding: '8px 0'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {c.user?.profile?.profile_picture ? (
+                        <img
+                          src={c.user.profile.profile_picture}
+                          alt={c.user.name}
+                          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          backgroundColor: '#ccc',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                          color: '#333'
+                        }}>
+                          {c.user?.name?.[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ fontSize: '0.9rem' }}>{c.user?.name}:</strong>
+                        <span style={{ fontSize: '0.9rem' }}>{c.content}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => handleDeleteComment(c.id, selectedPost.id)} className="comment-delete-button">
+                      Törlés
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Nincsenek kommentek.</p>
+            )}
+
+            <div className="new-comment-form">
+              <input
+                type="text"
+                placeholder="Új komment..."
+                value={newComments[selectedPost.id] || ''}
+                onChange={(e) => setNewComments(prev => ({ ...prev, [selectedPost.id]: e.target.value }))}
+                className="new-comment-input"
+              />
+              <button
+                onClick={() => handleAddComment(selectedPost.id)}
+                className="btn btn-comment"
+              >
+                Küldés
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
