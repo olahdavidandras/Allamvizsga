@@ -118,9 +118,31 @@ class PostController extends Controller
     }
     
 
-    // public function deleteImage(DeleteImageRequest $request, Post $post)
-    // {
-    //     $this->postRepository->deleteImage($post);
-    //     return back()->with('success', 'Kép törölve!');
-    // }
+    public function myPosts(Request $request)
+    {
+        $user = auth()->user();
+        $sortBy = $request->get('sort_by', 'created_at');
+        $order = $request->get('order', 'desc');
+
+        $validSorts = ['title', 'created_at'];
+        $validOrders = ['asc', 'desc'];
+
+        if (!in_array($sortBy, $validSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($order, $validOrders)) {
+            $order = 'desc';
+        }
+
+        $posts = $user->posts()
+            ->with('media')
+            ->orderBy($sortBy, $order)
+            ->get();
+
+        return response()->json($posts);
+    }
+
+
+
 }

@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
     Route::get('/public-posts', [PostController::class, 'publicPosts']);
     Route::post('/toggle-public', [PostController::class, 'togglePublic']);
-
+    Route::get('/my-posts', [PostController::class, 'myPosts']);
     
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 

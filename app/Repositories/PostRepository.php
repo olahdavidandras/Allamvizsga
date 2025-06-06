@@ -104,4 +104,23 @@ class PostRepository
         return Post::where('is_public', true)->with('media')->latest()->get();
     }
 
+    public function getUserPostsSorted($userId, $sortField = 'created_at', $sortOrder = 'desc')
+{
+    $allowedFields = ['title', 'created_at'];
+    $allowedOrder = ['asc', 'desc'];
+
+    if (!in_array($sortField, $allowedFields)) {
+        $sortField = 'created_at';
+    }
+
+    if (!in_array($sortOrder, $allowedOrder)) {
+        $sortOrder = 'desc';
+    }
+
+    return Post::where('user_id', $userId)
+        ->orderBy($sortField, $sortOrder)
+        ->with('media')
+        ->get();
+}
+
 }

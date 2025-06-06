@@ -9,8 +9,12 @@ const Gallery = ({ user }) => {
   const [loading, setLoading] = useState({});
   const [editMode, setEditMode] = useState(null);
   const [editedPost, setEditedPost] = useState({ title: '', content: '' });
+  const [sortOption, setSortOption] = useState('created_at-desc');
+  const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  
 
   
   /**
@@ -30,21 +34,21 @@ const Gallery = ({ user }) => {
   /**
    * Obține toate postările utilizatorului și comentariile aferente
    */
+
   const fetchPosts = async () => {
-    try {
-      const res = await axios.get('/my-posts', {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      setPosts(res.data);
-      res.data.forEach(post => fetchComments(post.id));
-    } catch (err) {
-      console.error('Hiba a képek lekérésekor:', err);
-      setPosts([]);
-    }
+    const [sort_by, order] = sortOption.split('-');
+    const res = await axios.get('/my-posts', {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { sort_by, order },
+    });
+    setPosts(res.data);
   };
 
+
   // Efect care se execută la montarea componentei
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => {
+    fetchPosts();
+  }, [sortOption]);
 
   /**
    * Adaugă un comentariu nou la o postare
@@ -165,6 +169,14 @@ const Gallery = ({ user }) => {
     }
   };
 
+    const handleImageClick = (post) => {
+    setSelectedPost(post);
+    };
+
+    const handleCloseModal = () => {
+      setSelectedPost(null);
+    };
+
   /**
    * Interfața principală de afișare a postărilor, imaginilor, comentariilor și acțiunilor
    */
@@ -179,7 +191,18 @@ const Gallery = ({ user }) => {
           <button onClick={() => navigate('/profile')} className="btn btn-profile">Saját profil</button>
         </div>
       </div>
-
+      <div className="sort-dropdown">
+        <label htmlFor="sortSelect">Rendezés:</label>
+      <select
+        onChange={(e) => setSortOption(e.target.value)}
+        className="sort-dropdown"
+      >
+        <option value="created_at-desc">Feltöltés (legújabb elöl)</option>
+        <option value="created_at-asc">Feltöltés (legrégebbi elöl)</option>
+        <option value="title-asc">Név szerint (A-Z)</option>
+        <option value="title-desc">Név szerint (Z-A)</option>
+      </select>
+      </div>
       <div className="gallery-grid">
         {posts.map((post) => (
           <div key={post.id} className="post-card">
