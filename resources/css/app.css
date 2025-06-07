@@ -959,3 +959,47 @@ html, body {
   display: block;
   margin: 0 auto 0.5rem auto;
 }
+
+.btn-enhance {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 5px 5px 10px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.btn-enhance:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-enhance:disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  border: 1px solid #ccc;
+}
+
+.edit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.edit-card {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fafafa;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-save-container {
+  display: flex;
+  justify-content: center; 
+  margin-top: 20px;
+}

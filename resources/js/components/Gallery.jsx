@@ -107,7 +107,8 @@ const Gallery = ({ user }) => {
   };
 
   const handleEdit = (post) => {
-    navigate(`/edit-gallery/${post.id}`);
+    const editId = post.ai_generated && post.parent_id ? post.parent_id : post.id;
+    navigate(`/edit-gallery/${editId}`);
   };
 
   const handleUpdate = async (postId) => {

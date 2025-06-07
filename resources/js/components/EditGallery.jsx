@@ -202,24 +202,41 @@ const EditGallery = () => {
               />{' '}
               Megjelenítés a galériában
             </label>
-            {!img.ai_generated && (
-              <div className="enhance-buttons">
-                <button
-                  onClick={() => triggerEnhancement(img.id, 'gfpgan')}
-                  className="btn btn-enhance"
-                  disabled={loading[img.id] === 'gfpgan'}
-                >
-                  {loading[img.id] === 'gfpgan' ? 'GFPGAN feldolgozás...' : 'GFPGAN javítás'}
-                </button>
-                <button
-                  onClick={() => triggerEnhancement(img.id, 'ddcolor')}
-                  className="btn btn-enhance"
-                  disabled={loading[img.id] === 'ddcolor'}
-                >
-                  {loading[img.id] === 'ddcolor' ? 'DDColor feldolgozás...' : 'DDColor színezés'}
-                </button>
-              </div>
-            )}
+            {!img.ai_generated && (() => {
+              const hasGfpgan = images.some(
+                (i) => i.parent_id === img.id && i.ai_type === 'gfpgan'
+              );
+              const hasDdcolor = images.some(
+                (i) => i.parent_id === img.id && i.ai_type === 'ddcolor'
+              );
+
+              return (
+                <div className="enhance-buttons">
+                  <button
+                    onClick={() => triggerEnhancement(img.id, 'gfpgan')}
+                    className="btn btn-enhance"
+                    disabled={loading[img.id] === 'gfpgan' || hasGfpgan}
+                  >
+                    {loading[img.id] === 'gfpgan'
+                      ? 'GFPGAN feldolgozás...'
+                      : hasGfpgan
+                      ? 'Már van javított kép'
+                      : 'GFPGAN javítás'}
+                  </button>
+                  <button
+                    onClick={() => triggerEnhancement(img.id, 'ddcolor')}
+                    className="btn btn-enhance"
+                    disabled={loading[img.id] === 'ddcolor' || hasDdcolor}
+                  >
+                    {loading[img.id] === 'ddcolor'
+                      ? 'DDColor feldolgozás...'
+                      : hasDdcolor
+                      ? 'Már van színezett kép'
+                      : 'DDColor színezés'}
+                  </button>
+                </div>
+              );
+            })()}
             <div className="post-actions">
               <button className="btn btn-save" onClick={() => handleUpdateImage(img.id)}>Mentés</button>
               <button className="btn btn-toggle" onClick={() => handleTogglePublic(img.id)}>
@@ -230,8 +247,10 @@ const EditGallery = () => {
           </div>
         ))}
       </div>
-      <button onClick={handleSave} className="btn btn-save">Galéria mentése</button>
-    </div>
+      <div className="gallery-save-container">
+        <button onClick={handleSave} className="btn btn-save">Galéria mentése</button>
+      </div>    
+</div>
   );
 };
 
