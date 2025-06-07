@@ -896,3 +896,66 @@ html, body {
 .modal-fade-out {
   animation: zoomOut 0.3s ease-in forwards;
 }
+
+.edit-gallery-view {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.image-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.image-column {
+  flex: 1 1 30%;
+  text-align: center;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-column img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.btn-save {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-save:hover {
+  background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+  .image-options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-column {
+    width: 90%;
+  }
+}
+.edit-image {
+  max-height: 400px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 0.5rem auto;
+}

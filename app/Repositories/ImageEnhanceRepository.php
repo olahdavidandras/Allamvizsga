@@ -119,7 +119,7 @@ class ImageEnhanceRepository
      * @param string $predictionId ID-ul predicției returnat de Replicate.
      * @return array Informații despre imaginea procesată sau stare curentă.
      */
-    public function checkStatus($predictionId)
+    public function checkStatus($predictionId, $parentId, $aiType)
     {
         $statusUrl = "https://api.replicate.com/v1/predictions/{$predictionId}";
 
@@ -128,12 +128,15 @@ class ImageEnhanceRepository
         ])->get($statusUrl);
 
         if ($response->failed()) {
-            return ['error' => 'Státusz lekérdezés sikertelen', 'status' => $response->status(), 'details' => $response->json()];
+            return [
+                'error' => 'Státusz lekérdezés sikertelen',
+                'status' => $response->status(),
+                'details' => $response->json()
+            ];
         }
 
         $data = $response->json();
 
-        // Dacă procesarea a fost finalizată cu succes, se salvează imaginea în aplicație
         if ($data['status'] === 'succeeded' && isset($data['output'])) {
             $user = Auth::user();
 
@@ -141,7 +144,12 @@ class ImageEnhanceRepository
                 'title' => 'Enhanced Image',
                 'content' => 'AI által feldolgozott kép',
                 'user_id' => $user ? $user->id : null,
+                'ai_generated' => true,
+                'ai_type' => $aiType,
+                'parent_id' => $parentId,
+                'visible_in_gallery' => false,
             ]);
+
 
             $media = $enhancedPost->addMediaFromUrl($data['output'])->toMediaCollection('images');
 
@@ -155,4 +163,5 @@ class ImageEnhanceRepository
 
         return $data;
     }
+
 }

@@ -11,6 +11,20 @@ class Post extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
-    protected $fillable = ['title', 'content', 'image', 'user_id'];
+    protected $fillable = [
+        'title',
+        'content',
+        'image',
+        'user_id',
+        'ai_generated',
+        'ai_type',
+        'parent_id',
+        'visible_in_gallery',
+        'is_public'
+    ];
+    public function aiVersions()
+{
+    return $this->hasMany(Post::class, 'parent_id');
+}
 }
 

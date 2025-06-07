@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/public-posts', [PostController::class, 'publicPosts']);
     Route::post('/toggle-public', [PostController::class, 'togglePublic']);
     Route::get('/my-posts', [PostController::class, 'myPosts']);
+    Route::get('/post/{id}/edit', [PostController::class, 'edit']);
+    Route::put('/update-visibility', [PostController::class, 'updateVisibility']);
     
     Route::post('/upload-image', [ImageEnhanceController::class, 'uploadImage'])->name('image.upload');
 

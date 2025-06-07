@@ -19,10 +19,12 @@ class CheckStatusRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
-        return [
-            'prediction_id' => 'required|string',
-        ];
-    }
+public function rules(): array
+{
+    return [
+        'prediction_id' => ['required', 'string'],
+        'parent_id' => ['required', 'integer', 'exists:posts,id'],
+        'ai_type' => ['required', 'in:gfpgan,ddcolor'],
+    ];
+}
 }

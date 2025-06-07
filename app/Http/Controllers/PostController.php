@@ -136,6 +136,7 @@ class PostController extends Controller
         }
 
         $posts = $user->posts()
+            ->where('visible_in_gallery', true)
             ->with('media')
             ->orderBy($sortBy, $order)
             ->get();
@@ -143,6 +144,47 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
+    public function edit($id)
+    {
+        $post = Post::with('aiVersions')->findOrFail($id);
 
+        if ($post->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Nincs jogosultság'], 403);
+        }
+
+        return response()->json([
+            'post' => $post,
+            'ai_versions' => $post->aiVersions
+        ]);
+    }
+
+    public function updateVisibility(Request $request)
+{
+$request->validate([
+    'post_id' => 'required|integer|exists:posts,id',
+    'visible_ids' => 'array',
+    'visible_ids.*' => 'integer|exists:posts,id'
+]);
+
+    $mainPost = Post::findOrFail($request->post_id);
+
+    if ($mainPost->user_id !== auth()->id()) {
+        return response()->json(['error' => 'Nincs jogosultság'], 403);
+    }
+
+    Post::where('parent_id', $mainPost->id)->update(['visible_in_gallery' => false]);
+
+    Post::whereIn('id', $request->visible_ids)->update(['visible_in_gallery' => true]);
+
+    if (in_array($mainPost->id, $request->visible_ids)) {
+        $mainPost->visible_in_gallery = true;
+        $mainPost->save();
+    } else {
+        $mainPost->visible_in_gallery = false;
+        $mainPost->save();
+    }
+
+    return response()->json(['message' => 'Galéria láthatóság frissítve.']);
+}
 
 }

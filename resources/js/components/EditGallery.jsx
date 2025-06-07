@@ -1,0 +1,238 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from '../axios';
+
+const EditGallery = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [images, setImages] = useState([]);
+  const [selectedImageIds, setSelectedImageIds] = useState([]);
+  const [editFields, setEditFields] = useState({});
+  const [loading, setLoading] = useState({});
+  const token = localStorage.getItem('token');
+
+  const fetchPostWithVariants = async () => {
+    try {
+      const res = await axios.get(`/post/${id}/edit`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const post = res.data.post || {};
+      const variants = Array.isArray(res.data.ai_versions) ? res.data.ai_versions : [];
+      const allImages = [post, ...variants];
+
+      setImages(allImages);
+
+      const initiallyVisible = allImages
+        .filter((img) => img?.visible_in_gallery)
+        .map((img) => img.id);
+
+      setSelectedImageIds(initiallyVisible);
+
+      const fieldMap = {};
+      allImages.forEach((img) => {
+        fieldMap[img.id] = {
+          title: img.title || '',
+          content: img.content || '',
+          is_public: !!img.is_public,
+        };
+      });
+      setEditFields(fieldMap);
+    } catch (err) {
+      console.error('Hiba a képek lekérésekor:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPostWithVariants();
+  }, [id]);
+
+  const handleCheckboxChange = (imgId) => {
+    setSelectedImageIds((prev) =>
+      prev.includes(imgId) ? prev.filter((id) => id !== imgId) : [...prev, imgId]
+    );
+  };
+
+  const handleFieldChange = (imgId, field, value) => {
+    setEditFields((prev) => ({
+      ...prev,
+      [imgId]: {
+        ...prev[imgId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleUpdateImage = async (imgId) => {
+    try {
+      await axios.put(`/post/${imgId}`, editFields[imgId], {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+      alert('Kép frissítve!');
+    } catch (err) {
+      console.error('Hiba mentéskor:', err);
+    }
+  };
+
+  const handleTogglePublic = async (imgId) => {
+    try {
+      await axios.post('/toggle-public', { post_id: imgId }, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+      setEditFields((prev) => ({
+        ...prev,
+        [imgId]: {
+          ...prev[imgId],
+          is_public: !prev[imgId].is_public,
+        },
+      }));
+      alert('Publikusság módosítva!');
+    } catch (err) {
+      console.error('Hiba a publikus módosításnál:', err);
+    }
+  };
+
+  const handleDelete = async (imgId) => {
+    if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
+    try {
+      await axios.delete(`/post/${imgId}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+      setImages((prev) => prev.filter((img) => img.id !== imgId));
+    } catch (err) {
+      console.error('Hiba a törlés során:', err);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await axios.put(
+        '/update-visibility',
+        {
+          post_id: parseInt(id),
+          visible_ids: selectedImageIds,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+      alert('Galéria beállítások frissítve');
+      navigate('/gallery');
+    } catch (err) {
+      console.error('Hiba mentés közben:', err);
+    }
+  };
+
+  const triggerEnhancement = async (imgId, apiType) => {
+    setLoading((prev) => ({ ...prev, [imgId]: apiType }));
+    try {
+      const res = await axios.post('/enhance', { image_id: imgId, api_type: apiType }, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+      setTimeout(() => {
+        checkStatus(res.data.prediction_id, imgId, apiType);
+      }, 5000);
+    } catch (err) {
+      console.error('Hiba AI feldolgozás során:', err);
+    } finally {
+      setLoading((prev) => ({ ...prev, [imgId]: null }));
+    }
+  };
+
+  const checkStatus = async (predictionId, postId, apiType) => {
+    try {
+      const res = await axios.post('/check-status', {
+        prediction_id: predictionId,
+        parent_id: postId,
+        ai_type: apiType,
+      }, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+
+      if (res.data.status === 'processing') {
+        setTimeout(() => checkStatus(predictionId, postId, apiType), 5000);
+      } else if (res.data.image_url) {
+        fetchPostWithVariants();
+      }
+    } catch (err) {
+      console.error('Hiba a státusz lekérdezésnél:', err);
+    }
+  };
+
+  return (
+    <div className="gallery-container">
+      <h2 className="gallery-title">Szerkesztés – Galériába való megjelenítés</h2>
+      <div className="edit-grid">
+        {Array.isArray(images) && images.map((img, idx) => (
+          <div key={img?.id ?? `image-${idx}`} className="edit-card">
+            {img?.image ? (
+              <img
+                src={img.image}
+                alt={img.title || 'Kép'}
+                className="post-image edit-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/placeholder.jpg';
+                }}
+              />
+            ) : (
+              <p className="no-image">Nincs kép ({img.id})</p>
+            )}
+            <input
+              type="text"
+              className="edit-input"
+              placeholder="Cím"
+              value={editFields[img.id]?.title || ''}
+              onChange={(e) => handleFieldChange(img.id, 'title', e.target.value)}
+            />
+            <textarea
+              className="edit-textarea"
+              placeholder="Leírás"
+              value={editFields[img.id]?.content || ''}
+              onChange={(e) => handleFieldChange(img.id, 'content', e.target.value)}
+            />
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={selectedImageIds.includes(img.id)}
+                onChange={() => handleCheckboxChange(img.id)}
+              />{' '}
+              Megjelenítés a galériában
+            </label>
+            {!img.ai_generated && (
+              <div className="enhance-buttons">
+                <button
+                  onClick={() => triggerEnhancement(img.id, 'gfpgan')}
+                  className="btn btn-enhance"
+                  disabled={loading[img.id] === 'gfpgan'}
+                >
+                  {loading[img.id] === 'gfpgan' ? 'GFPGAN feldolgozás...' : 'GFPGAN javítás'}
+                </button>
+                <button
+                  onClick={() => triggerEnhancement(img.id, 'ddcolor')}
+                  className="btn btn-enhance"
+                  disabled={loading[img.id] === 'ddcolor'}
+                >
+                  {loading[img.id] === 'ddcolor' ? 'DDColor feldolgozás...' : 'DDColor színezés'}
+                </button>
+              </div>
+            )}
+            <div className="post-actions">
+              <button className="btn btn-save" onClick={() => handleUpdateImage(img.id)}>Mentés</button>
+              <button className="btn btn-toggle" onClick={() => handleTogglePublic(img.id)}>
+                {editFields[img.id]?.is_public ? 'Publikus visszavonása' : 'Publikussá tétel'}
+              </button>
+              <button className="btn btn-delete" onClick={() => handleDelete(img.id)}>Törlés</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={handleSave} className="btn btn-save">Galéria mentése</button>
+    </div>
+  );
+};
+
+export default EditGallery;

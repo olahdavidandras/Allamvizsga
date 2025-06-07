@@ -45,7 +45,7 @@ const Gallery = ({ user }) => {
       if (selectedPostIndex !== null) {
         if (e.key === 'ArrowLeft') handlePrev();
         else if (e.key === 'ArrowRight') handleNext();
-        else if (e.key === 'Escape') setSelectedPostIndex(null);
+        else if (e.key === 'Escape') handleCloseModal();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -107,8 +107,7 @@ const Gallery = ({ user }) => {
   };
 
   const handleEdit = (post) => {
-    setEditMode(post.id);
-    setEditedPost({ title: post.title, content: post.content });
+    navigate(`/edit-gallery/${post.id}`);
   };
 
   const handleUpdate = async (postId) => {
@@ -165,13 +164,12 @@ const Gallery = ({ user }) => {
   };
 
   const handleCloseModal = () => {
-  setIsClosing(true);
-  setTimeout(() => {
-    setSelectedPostIndex(null);
-    setIsClosing(false);
-    }, 300); 
+    setIsClosing(true);
+    setTimeout(() => {
+      setSelectedPostIndex(null);
+      setIsClosing(false);
+    }, 300);
   };
-
 
   return (
     <div className="gallery-container">
@@ -216,7 +214,7 @@ const Gallery = ({ user }) => {
             <img key={posts[selectedPostIndex].id} src={posts[selectedPostIndex].image} alt={posts[selectedPostIndex].title} className={`modal-image slide-${slideDirection}`} onAnimationEnd={() => setSlideDirection('')} />
             <h3>{posts[selectedPostIndex].title}</h3>
             <p>{posts[selectedPostIndex].content}</p>
-            <button className="btn btn-edit" onClick={() => navigate(`/edit/${posts[selectedPostIndex].id}`)}>Szerkesztés</button>
+            <button className="btn btn-edit" onClick={() => handleEdit(posts[selectedPostIndex])}>Szerkesztés</button>
             <h4>Kommentek:</h4>
             {comments[posts[selectedPostIndex].id]?.length ? (
               <ul className="comment-list">
