@@ -91,6 +91,7 @@ const PublicGallery = () => {
       console.error('Eroare la trimiterea comentariului:', err);
     }
   };
+  
 
   /**
    * Navighează la imaginea anterioară în modul galerie.
