@@ -6,11 +6,14 @@ const PublicGallery = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [newComments, setNewComments] = useState({});
+  const [selectedPostIndex, setSelectedPostIndex] = useState(null);
+  const [slideDirection, setSlideDirection] = useState('');
+  const [isClosing, setIsClosing] = useState(false);
   const navigate = useNavigate();
 
   /**
-   * Funcția care solicită comentariile unui anumit post de la API
-   * și le salvează în starea locală pentru afișare.
+   * Funcția solicită comentariile asociate unei postări.
+   * Salvează rezultatul în starea locală pentru afișare.
    */
   const fetchComments = async (postId) => {
     const token = localStorage.getItem('token');
@@ -23,13 +26,12 @@ const PublicGallery = () => {
       });
       setComments(prev => ({ ...prev, [postId]: res.data }));
     } catch (err) {
-      console.error(`Hiba a kommentek lekérésekor (post ${postId}):`, err);
+      console.error(`Eroare la încărcarea comentariilor (post ${postId}):`, err);
     }
   };
 
   /**
-   * Funcția care solicită toate postările publice și, pentru fiecare post,
-   * încarcă și comentariile asociate.
+   * Funcția încarcă toate postările publice și apelează fetchComments pentru fiecare.
    */
   const fetchPublicPosts = async () => {
     const token = localStorage.getItem('token');
@@ -43,18 +45,33 @@ const PublicGallery = () => {
       setPosts(res.data);
       res.data.forEach(post => fetchComments(post.id));
     } catch (err) {
-      console.error('Hiba a publikus posztok lekérésekor:', err);
+      console.error('Eroare la încărcarea postărilor publice:', err);
     }
   };
 
-  // La montarea componentei, se solicită postările publice
+  // La montarea componentei, se încarcă postările publice
   useEffect(() => {
     fetchPublicPosts();
   }, []);
 
   /**
-   * Funcția care adaugă un comentariu nou la un post specificat.
-   * Se resetează câmpul după trimitere și se reîncarcă comentariile.
+   * Ascultă evenimentele tastaturii pentru navigare și închidere în mod modal.
+   */
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedPostIndex !== null) {
+        if (e.key === 'ArrowLeft') handlePrev();
+        else if (e.key === 'ArrowRight') handleNext();
+        else if (e.key === 'Escape') handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPostIndex]);
+
+  /**
+   * Funcția adaugă un comentariu nou la o postare.
+   * După trimitere, câmpul se golește și se reîncarcă comentariile.
    */
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
@@ -71,12 +88,47 @@ const PublicGallery = () => {
       setNewComments(prev => ({ ...prev, [postId]: '' }));
       fetchComments(postId);
     } catch (err) {
-      console.error('Hiba komment küldésekor:', err);
+      console.error('Eroare la trimiterea comentariului:', err);
     }
   };
 
+  /**
+   * Navighează la imaginea anterioară în modul galerie.
+   */
+  const handlePrev = () => {
+    if (selectedPostIndex > 0) {
+      const newIndex = selectedPostIndex - 1;
+      setSlideDirection('left');
+      setSelectedPostIndex(newIndex);
+      fetchComments(posts[newIndex].id);
+    }
+  };
+
+  /**
+   * Navighează la imaginea următoare în modul galerie.
+   */
+  const handleNext = () => {
+    if (selectedPostIndex < posts.length - 1) {
+      const newIndex = selectedPostIndex + 1;
+      setSlideDirection('right');
+      setSelectedPostIndex(newIndex);
+      fetchComments(posts[newIndex].id);
+    }
+  };
+
+  /**
+   * Închide vizualizarea detaliată (modal).
+   */
+  const handleCloseModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setSelectedPostIndex(null);
+      setIsClosing(false);
+    }, 300);
+  };
+
   return (
-    <div className="public-gallery-container">
+    <div className="gallery-container">
       <div className="gallery-header">
         <h2 className="gallery-title">Publikus Galéria</h2>
         <div className="gallery-button-group">
@@ -87,57 +139,94 @@ const PublicGallery = () => {
         </div>
       </div>
 
-      <div className="public-gallery-grid">
-        {posts.map(post => (
-          <div key={post.id} className="public-post-card">
-            <h3 className="post-title">{post.title}</h3>
-            <p className="post-content">{post.content}</p>
-
-            {post.image
-              ? <img src={post.image} alt={post.title} className="post-image" />
-              : <p className="no-image">Nincs kép</p>
-            }
-
-            <div className="comments-section">
-              <h4>Kommentek:</h4>
-              {comments[post.id]?.length ? (
-                <ul className="public-comment-list">
-                  {comments[post.id].map(c => (
-                    <li key={c.id} className="public-comment-item">
-                      <img
-                        src={c.user?.profile?.profile_picture || '/default-avatar.png'}
-                        alt="Profilkép"
-                        className="public-comment-avatar"
-                      />
-                      <div className="public-comment-text">
-                        <strong>{c.user?.name}:</strong> {c.content}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="no-comments">Nincsenek kommentek.</p>
-              )}
-
-              <div className="new-comment-form">
-<input
-  type="text"
-  placeholder="Új komment..."
-  value={newComments[post.id] || ''}
-  onChange={e => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-  className="new-comment-input"
-/>
-                <button
-                  onClick={() => handleAddComment(post.id)}
-                  className="btn btn-comment"
-                >
-                  Küldés
-                </button>
-              </div>
-            </div>
+      <div className="gallery-grid">
+        {posts.map((post, index) => (
+          <div
+            key={post.id}
+            className="post-card"
+            onClick={() => {
+              setSelectedPostIndex(index);
+              fetchComments(post.id);
+            }}
+          >
+            {post.image ? (
+              <img src={post.image} alt={post.title} className="post-image" />
+            ) : (
+              <p className="no-image">Nincs kép</p>
+            )}
           </div>
         ))}
       </div>
+
+      {selectedPostIndex !== null && posts[selectedPostIndex] && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div
+            className={`modal-content ${isClosing ? 'modal-fade-out' : 'modal-fade-in'}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={handleCloseModal}>×</button>
+            <button className="modal-nav modal-prev" onClick={handlePrev} disabled={selectedPostIndex === 0}>◀</button>
+            <button className="modal-nav modal-next" onClick={handleNext} disabled={selectedPostIndex === posts.length - 1}>▶</button>
+            <img
+              key={posts[selectedPostIndex].id}
+              src={posts[selectedPostIndex].image}
+              alt={posts[selectedPostIndex].title}
+              className={`modal-image slide-${slideDirection}`}
+              onAnimationEnd={() => setSlideDirection('')}
+            />
+            <h3>{posts[selectedPostIndex].title}</h3>
+            <p>{posts[selectedPostIndex].content}</p>
+            <h4>Kommentek:</h4>
+            {comments[posts[selectedPostIndex].id]?.length ? (
+              <ul className="comment-list">
+                {comments[posts[selectedPostIndex].id].map((c) => (
+                  <li key={c.id} className="comment-item">
+                    <div className="comment-main">
+                      {c.user?.profile?.profile_picture ? (
+                        <img
+                          src={c.user.profile.profile_picture}
+                          alt={c.user.name}
+                          className="comment-avatar"
+                        />
+                      ) : (
+                        <div className="comment-avatar fallback">
+                          {c.user?.name?.[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                      <div className="comment-text">
+                        <strong className="comment-line">{c.user?.name}:</strong>
+                        <span className="comment-line">{c.content}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Nincsenek kommentek.</p>
+            )}
+            <div className="new-comment-form">
+              <input
+                type="text"
+                placeholder="Új komment..."
+                value={newComments[posts[selectedPostIndex].id] || ''}
+                onChange={(e) =>
+                  setNewComments(prev => ({
+                    ...prev,
+                    [posts[selectedPostIndex].id]: e.target.value
+                  }))
+                }
+                className="new-comment-input"
+              />
+              <button
+                onClick={() => handleAddComment(posts[selectedPostIndex].id)}
+                className="btn btn-comment"
+              >
+                Küldés
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

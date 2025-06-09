@@ -953,11 +953,9 @@ html, body {
   }
 }
 .edit-image {
-  max-height: 400px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto 0.5rem auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 .btn-enhance {
@@ -985,9 +983,10 @@ html, body {
 .edit-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
   justify-content: center;
+  gap: 2rem;
 }
+
 
 .edit-card {
   width: 300px;

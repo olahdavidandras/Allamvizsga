@@ -16,6 +16,9 @@ const Gallery = ({ user }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
+  /**
+   * Solicita comentariile pentru o anumită postare și le salvează în stare.
+   */
   const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`/posts/${postId}/comments`, {
@@ -27,6 +30,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Solicită toate postările utilizatorului și le sortează după opțiune.
+   */
   const fetchPosts = async () => {
     const [sort_by, order] = sortOption.split('-');
     const res = await axios.get('/my-posts', {
@@ -40,6 +46,9 @@ const Gallery = ({ user }) => {
     fetchPosts();
   }, [sortOption]);
 
+  /**
+   * Ascultă tastele pentru navigare stânga/dreapta și ieșire din mod galerie.
+   */
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (selectedPostIndex !== null) {
@@ -52,6 +61,9 @@ const Gallery = ({ user }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedPostIndex]);
 
+  /**
+   * Trimite un comentariu nou și reîncarcă comentariile.
+   */
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
     if (!content) return;
@@ -66,6 +78,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Șterge un comentariu de la o postare dată.
+   */
   const handleDeleteComment = async (commentId, postId) => {
     try {
       await axios.delete(`/comments/${commentId}`, {
@@ -77,6 +92,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Trimite imaginea pentru procesare AI (GFPGAN sau DDColor).
+   */
   const handleEnhance = async (postId, apiType) => {
     setLoading(prev => ({ ...prev, [postId]: apiType }));
     try {
@@ -91,6 +109,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Verifică periodic starea procesării AI și reîncarcă imaginile dacă a fost finalizată.
+   */
   const checkStatus = async (predictionId, postId) => {
     try {
       const res = await axios.post('/check-status', { prediction_id: predictionId }, {
@@ -106,11 +127,17 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Redirecționează către pagina de editare, luând în considerare imaginea AI sau originală.
+   */
   const handleEdit = (post) => {
     const editId = post.ai_generated && post.parent_id ? post.parent_id : post.id;
     navigate(`/edit-gallery/${editId}`);
   };
 
+  /**
+   * Actualizează titlul și descrierea unei imagini.
+   */
   const handleUpdate = async (postId) => {
     try {
       await axios.put(`/post/${postId}`, editedPost, {
@@ -123,6 +150,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Șterge definitiv o imagine din galerie.
+   */
   const handleDelete = async (postId) => {
     if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
     try {
@@ -135,6 +165,9 @@ const Gallery = ({ user }) => {
     }
   };
 
+  /**
+   * Comută vizibilitatea publică a unei imagini.
+   */
   const handleTogglePublic = async (postId) => {
     try {
       await axios.post('/toggle-public', { post_id: postId }, {
@@ -174,6 +207,7 @@ const Gallery = ({ user }) => {
 
   return (
     <div className="gallery-container">
+      {/* Header cu butoane de navigare */}
       <div className="gallery-header">
         <h2 className="gallery-title">Galéria</h2>
         <div className="gallery-button-group">
@@ -183,6 +217,8 @@ const Gallery = ({ user }) => {
           <button onClick={() => navigate('/profile')} className="btn btn-profile">Saját profil</button>
         </div>
       </div>
+
+      {/* Dropdown pentru sortare */}
       <div className="sort-dropdown">
         <label htmlFor="sortSelect">Rendezés:</label>
         <select onChange={(e) => setSortOption(e.target.value)} className="sort-dropdown">
@@ -192,6 +228,8 @@ const Gallery = ({ user }) => {
           <option value="title-desc">Név szerint (Z-A)</option>
         </select>
       </div>
+
+      {/* Afișarea imaginilor din galerie */}
       <div className="gallery-grid">
         {posts.map((post, index) => (
           <div key={post.id} className="post-card" onClick={() => {
@@ -206,13 +244,21 @@ const Gallery = ({ user }) => {
           </div>
         ))}
       </div>
+
+      {/* Modal pentru vizualizare detaliată */}
       {selectedPostIndex !== null && posts[selectedPostIndex] && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className={`modal-content ${isClosing ? 'modal-fade-out' : 'modal-fade-in'}`} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={handleCloseModal}>×</button>
             <button className="modal-nav modal-prev" onClick={handlePrev} disabled={selectedPostIndex === 0}>◀</button>
             <button className="modal-nav modal-next" onClick={handleNext} disabled={selectedPostIndex === posts.length - 1}>▶</button>
-            <img key={posts[selectedPostIndex].id} src={posts[selectedPostIndex].image} alt={posts[selectedPostIndex].title} className={`modal-image slide-${slideDirection}`} onAnimationEnd={() => setSlideDirection('')} />
+            <img
+              key={posts[selectedPostIndex].id}
+              src={posts[selectedPostIndex].image}
+              alt={posts[selectedPostIndex].title}
+              className={`modal-image slide-${slideDirection}`}
+              onAnimationEnd={() => setSlideDirection('')}
+            />
             <h3>{posts[selectedPostIndex].title}</h3>
             <p>{posts[selectedPostIndex].content}</p>
             <button className="btn btn-edit" onClick={() => handleEdit(posts[selectedPostIndex])}>Szerkesztés</button>
@@ -242,7 +288,13 @@ const Gallery = ({ user }) => {
               <p>Nincsenek kommentek.</p>
             )}
             <div className="new-comment-form">
-              <input type="text" placeholder="Új komment..." value={newComments[posts[selectedPostIndex].id] || ''} onChange={(e) => setNewComments(prev => ({ ...prev, [posts[selectedPostIndex].id]: e.target.value }))} className="new-comment-input" />
+              <input
+                type="text"
+                placeholder="Új komment..."
+                value={newComments[posts[selectedPostIndex].id] || ''}
+                onChange={(e) => setNewComments(prev => ({ ...prev, [posts[selectedPostIndex].id]: e.target.value }))}
+                className="new-comment-input"
+              />
               <button onClick={() => handleAddComment(posts[selectedPostIndex].id)} className="btn btn-comment">Küldés</button>
             </div>
           </div>

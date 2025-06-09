@@ -11,6 +11,9 @@ const EditGallery = () => {
   const [loading, setLoading] = useState({});
   const token = localStorage.getItem('token');
 
+  /**
+   * Funcția care obține imaginea originală și versiunile AI pentru editare
+   */
   const fetchPostWithVariants = async () => {
     try {
       const res = await axios.get(`/post/${id}/edit`, {
@@ -47,12 +50,18 @@ const EditGallery = () => {
     fetchPostWithVariants();
   }, [id]);
 
+  /**
+   * Actualizează selecția imaginilor vizibile în galerie
+   */
   const handleCheckboxChange = (imgId) => {
     setSelectedImageIds((prev) =>
       prev.includes(imgId) ? prev.filter((id) => id !== imgId) : [...prev, imgId]
     );
   };
 
+  /**
+   * Actualizează titlul, descrierea și starea publică a unei imagini
+   */
   const handleFieldChange = (imgId, field, value) => {
     setEditFields((prev) => ({
       ...prev,
@@ -63,6 +72,9 @@ const EditGallery = () => {
     }));
   };
 
+  /**
+   * Trimite modificările unei imagini individuale către server
+   */
   const handleUpdateImage = async (imgId) => {
     try {
       await axios.put(`/post/${imgId}`, editFields[imgId], {
@@ -74,6 +86,9 @@ const EditGallery = () => {
     }
   };
 
+  /**
+   * Schimbă vizibilitatea publică a imaginii
+   */
   const handleTogglePublic = async (imgId) => {
     try {
       await axios.post('/toggle-public', { post_id: imgId }, {
@@ -92,18 +107,31 @@ const EditGallery = () => {
     }
   };
 
+  /**
+   * Șterge o imagine din galerie. Dacă nu mai există imagini, redirecționează
+   */
   const handleDelete = async (imgId) => {
     if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
     try {
       await axios.delete(`/post/${imgId}`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       });
-      setImages((prev) => prev.filter((img) => img.id !== imgId));
+
+      setImages((prev) => {
+        const updated = prev.filter((img) => img.id !== imgId);
+        if (updated.length === 0) {
+          navigate('/gallery');
+        }
+        return updated;
+      });
     } catch (err) {
       console.error('Hiba a törlés során:', err);
     }
   };
 
+  /**
+   * Salvează vizibilitatea imaginilor selectate în galerie
+   */
   const handleSave = async () => {
     try {
       await axios.put(
@@ -126,6 +154,9 @@ const EditGallery = () => {
     }
   };
 
+  /**
+   * Inițiază procesul AI de înfrumusețare sau colorare
+   */
   const triggerEnhancement = async (imgId, apiType) => {
     setLoading((prev) => ({ ...prev, [imgId]: apiType }));
     try {
@@ -142,6 +173,9 @@ const EditGallery = () => {
     }
   };
 
+  /**
+   * Verifică starea procesării AI și reîncarcă imaginile la final
+   */
   const checkStatus = async (predictionId, postId, apiType) => {
     try {
       const res = await axios.post('/check-status', {
@@ -164,7 +198,7 @@ const EditGallery = () => {
 
   return (
     <div className="gallery-container">
-      <h2 className="gallery-title">Szerkesztés – Galériába való megjelenítés</h2>
+      <h2 className="gallery-title">Szerkesztés és Galériába való megjelenítés</h2>
       <div className="edit-grid">
         {Array.isArray(images) && images.map((img, idx) => (
           <div key={img?.id ?? `image-${idx}`} className="edit-card">
@@ -249,8 +283,8 @@ const EditGallery = () => {
       </div>
       <div className="gallery-save-container">
         <button onClick={handleSave} className="btn btn-save">Galéria mentése</button>
-      </div>    
-</div>
+      </div>
+    </div>
   );
 };
 
