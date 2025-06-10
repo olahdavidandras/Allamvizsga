@@ -7,6 +7,9 @@ use App\Http\Requests\Post\DeletePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Requests\Post\PublicPostsRequest;
 use App\Http\Requests\Post\TogglePublicRequest;
+use App\Http\Requests\Post\MyPostsRequest;
+use App\Http\Requests\Post\UpdateVisibilityRequest;
+use App\Http\Requests\Post\EditPostRequest;
 use App\Repositories\PostRepository;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -118,73 +121,19 @@ class PostController extends Controller
     }
     
 
-    public function myPosts(Request $request)
+    public function myPosts(MyPostsRequest $request)
     {
-        $user = auth()->user();
-        $sortBy = $request->get('sort_by', 'created_at');
-        $order = $request->get('order', 'desc');
-
-        $validSorts = ['title', 'created_at'];
-        $validOrders = ['asc', 'desc'];
-
-        if (!in_array($sortBy, $validSorts)) {
-            $sortBy = 'created_at';
-        }
-
-        if (!in_array($order, $validOrders)) {
-            $order = 'desc';
-        }
-
-        $posts = $user->posts()
-            ->where('visible_in_gallery', true)
-            ->with('media')
-            ->orderBy($sortBy, $order)
-            ->get();
-
-        return response()->json($posts);
+        return $this->postRepository->getMyPosts(auth()->user(), $request);
     }
 
-    public function edit($id)
+    public function edit($id, EditPostRequest $request)
     {
-        $post = Post::with('aiVersions')->findOrFail($id);
-
-        if ($post->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Nincs jogosultság'], 403);
-        }
-
-        return response()->json([
-            'post' => $post,
-            'ai_versions' => $post->aiVersions
-        ]);
+        return $this->postRepository->getPostWithVariants($id, auth()->id());
     }
 
-    public function updateVisibility(Request $request)
-{
-$request->validate([
-    'post_id' => 'required|integer|exists:posts,id',
-    'visible_ids' => 'array',
-    'visible_ids.*' => 'integer|exists:posts,id'
-]);
-
-    $mainPost = Post::findOrFail($request->post_id);
-
-    if ($mainPost->user_id !== auth()->id()) {
-        return response()->json(['error' => 'Nincs jogosultság'], 403);
+    public function updateVisibility(UpdateVisibilityRequest $request)
+    {
+        return $this->postRepository->updateVisibility($request->post_id, $request->visible_ids, auth()->id());
     }
-
-    Post::where('parent_id', $mainPost->id)->update(['visible_in_gallery' => false]);
-
-    Post::whereIn('id', $request->visible_ids)->update(['visible_in_gallery' => true]);
-
-    if (in_array($mainPost->id, $request->visible_ids)) {
-        $mainPost->visible_in_gallery = true;
-        $mainPost->save();
-    } else {
-        $mainPost->visible_in_gallery = false;
-        $mainPost->save();
-    }
-
-    return response()->json(['message' => 'Galéria láthatóság frissítve.']);
-}
 
 }
