@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Clasa ImageEnhanceRepository gestionează operațiile de încărcare, 
+ * Clasa ImageEnhanceRepository gestionează operațiile de încărcare,
  * procesare AI (prin API-ul Replicate) și salvare a imaginilor procesate.
  */
 class ImageEnhanceRepository
@@ -33,17 +33,15 @@ class ImageEnhanceRepository
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Nem vagy bejelentkezve!'], 401);
+            return ['error' => 'Nem vagy bejelentkezve!'];
         }
 
-        // Creează un nou post (înregistrare)
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
             'user_id' => $user->id
         ]);
 
-        // Adaugă imaginea în colecția MediaLibrary și actualizează URL-ul
         $media = $post->addMediaFromRequest('image')->toMediaCollection('images');
         $post->update(['image' => $media->getUrl()]);
 
@@ -58,7 +56,7 @@ class ImageEnhanceRepository
      *
      * @param int $imageId ID-ul postării (Post) care conține imaginea.
      * @param string $apiType Tipul procesării: 'gfpgan' sau 'ddcolor'.
-     * @return array Răspunsul complet de la API-ul Replicate.
+     * @return array Răspunsul complet de la API-ul Replicate sau eroare.
      */
     public function enhanceImage($imageId, $apiType)
     {
@@ -69,35 +67,35 @@ class ImageEnhanceRepository
 
         $media = $post->getFirstMedia('images');
         if (!$media) {
-            return ['error' => 'Nem található a kép'];
+            return ['error' => 'Nem található a médiafájl'];
         }
 
-        // Se obține calea locală a imaginii
+        // Obține calea locală a imaginii și o trimite ca fișier la Replicate
         $imageUrl = $media->getPath();
 
-        // Se trimite imaginea către Replicate ca fișier
         $fileResponse = Http::withHeaders([
             'Authorization' => 'Token ' . $this->apiKey,
         ])->attach('content', file_get_contents($imageUrl), basename($imageUrl))
-        ->post('https://api.replicate.com/v1/files');
+          ->post('https://api.replicate.com/v1/files');
 
         if ($fileResponse->failed()) {
             return ['error' => 'Kép feltöltése sikertelen', 'details' => $fileResponse->json()];
         }
 
-        $fileData = $fileResponse->json();
-        $uploadedImageUrl = $fileData['urls']['get'];
+        $uploadedImageUrl = $fileResponse->json()['urls']['get'];
 
-        // Se selectează versiunea corectă de model AI în funcție de tip
+        // Selectează versiunea modelului AI
         $apiVersions = [
             'gfpgan' => '0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c',
             'ddcolor' => 'ca494ba129e44e45f661d6ece83c4c98a9a7c774309beca01429b58fce8aa695'
         ];
 
-        // Se pregătește inputul specific pentru fiecare model
-        $input = ($apiType === 'gfpgan') ? ['img' => $uploadedImageUrl, 'scale' => 2] : ['image' => $uploadedImageUrl];
+        // Pregătește inputul în funcție de modelul AI
+        $input = ($apiType === 'gfpgan') 
+            ? ['img' => $uploadedImageUrl, 'scale' => 2] 
+            : ['image' => $uploadedImageUrl];
 
-        // Se trimite cererea de procesare la Replicate
+        // Trimite cererea de procesare către Replicate
         $enhanceResponse = Http::withHeaders([
             'Authorization' => 'Token ' . $this->apiKey,
             'Content-Type' => 'application/json',
@@ -117,15 +115,15 @@ class ImageEnhanceRepository
      * Verifică starea unei cereri de procesare AI și salvează imaginea finală dacă este gata.
      *
      * @param string $predictionId ID-ul predicției returnat de Replicate.
+     * @param int $parentId ID-ul imaginii originale.
+     * @param string $aiType Tipul procesării: 'gfpgan' sau 'ddcolor'.
      * @return array Informații despre imaginea procesată sau stare curentă.
      */
     public function checkStatus($predictionId, $parentId, $aiType)
     {
-        $statusUrl = "https://api.replicate.com/v1/predictions/{$predictionId}";
-
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->apiKey,
-        ])->get($statusUrl);
+        ])->get("https://api.replicate.com/v1/predictions/{$predictionId}");
 
         if ($response->failed()) {
             return [
@@ -137,25 +135,27 @@ class ImageEnhanceRepository
 
         $data = $response->json();
 
+        // Dacă imaginea este procesată cu succes, salvează rezultatul în baza de date
         if ($data['status'] === 'succeeded' && isset($data['output'])) {
             $user = Auth::user();
 
-            $enhancedPost = Post::create([
+            $post = Post::create([
                 'title' => 'Enhanced Image',
                 'content' => 'AI által feldolgozott kép',
-                'user_id' => $user ? $user->id : null,
+                'user_id' => $user?->id,
                 'ai_generated' => true,
                 'ai_type' => $aiType,
                 'parent_id' => $parentId,
                 'visible_in_gallery' => false,
             ]);
 
-
-            $media = $enhancedPost->addMediaFromUrl($data['output'])->toMediaCollection('images');
+            $media = $post->addMediaFromUrl($data['output'])->toMediaCollection('images');
+            $post->update(['image' => $media->getUrl()]);
 
             return [
-                'image_id' => $enhancedPost->id,
-                'url' => $media->getUrl()
+                'image_url' => $media->getUrl(),
+                'message' => 'Kép sikeresen elmentve és feldolgozva.',
+                'image_id' => $post->id
             ];
         }
 
@@ -163,5 +163,4 @@ class ImageEnhanceRepository
 
         return $data;
     }
-
 }
