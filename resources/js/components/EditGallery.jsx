@@ -9,6 +9,7 @@ const EditGallery = () => {
   const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [editFields, setEditFields] = useState({});
   const [loading, setLoading] = useState({});
+  const [enhancingImage, setEnhancingImage] = useState(null);
   const token = localStorage.getItem('token');
 
   /**
@@ -80,7 +81,6 @@ const EditGallery = () => {
       await axios.put(`/post/${imgId}`, editFields[imgId], {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       });
-      alert('Kép frissítve!');
     } catch (err) {
       console.error('Hiba mentéskor:', err);
     }
@@ -101,7 +101,6 @@ const EditGallery = () => {
           is_public: !prev[imgId].is_public,
         },
       }));
-      alert('Publikusság módosítva!');
     } catch (err) {
       console.error('Hiba a publikus módosításnál:', err);
     }
@@ -147,7 +146,6 @@ const EditGallery = () => {
           },
         }
       );
-      alert('Galéria beállítások frissítve');
       navigate('/gallery');
     } catch (err) {
       console.error('Hiba mentés közben:', err);
@@ -159,6 +157,7 @@ const EditGallery = () => {
    */
   const triggerEnhancement = async (imgId, apiType) => {
     setLoading((prev) => ({ ...prev, [imgId]: apiType }));
+    setEnhancingImage(imgId);
     try {
       const res = await axios.post('/enhance', { image_id: imgId, api_type: apiType }, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
@@ -168,8 +167,7 @@ const EditGallery = () => {
       }, 5000);
     } catch (err) {
       console.error('Hiba AI feldolgozás során:', err);
-    } finally {
-      setLoading((prev) => ({ ...prev, [imgId]: null }));
+      setEnhancingImage(null);
     }
   };
 
@@ -189,10 +187,12 @@ const EditGallery = () => {
       if (res.data.status === 'processing') {
         setTimeout(() => checkStatus(predictionId, postId, apiType), 5000);
       } else if (res.data.image_url) {
+        setEnhancingImage(null);
         fetchPostWithVariants();
       }
     } catch (err) {
       console.error('Hiba a státusz lekérdezésnél:', err);
+      setEnhancingImage(null);
     }
   };
 
@@ -237,36 +237,37 @@ const EditGallery = () => {
               Megjelenítés a galériában
             </label>
             {!img.ai_generated && (() => {
-              const hasGfpgan = images.some(
-                (i) => i.parent_id === img.id && i.ai_type === 'gfpgan'
-              );
-              const hasDdcolor = images.some(
-                (i) => i.parent_id === img.id && i.ai_type === 'ddcolor'
-              );
+              const hasGfpgan = images.some((i) => i.parent_id === img.id && i.ai_type === 'gfpgan');
+              const hasDdcolor = images.some((i) => i.parent_id === img.id && i.ai_type === 'ddcolor');
 
               return (
                 <div className="enhance-buttons">
                   <button
                     onClick={() => triggerEnhancement(img.id, 'gfpgan')}
                     className="btn btn-enhance"
-                    disabled={loading[img.id] === 'gfpgan' || hasGfpgan}
+                    disabled={loading[img.id] === 'gfpgan' || hasGfpgan || enhancingImage !== null}
                   >
-                    {loading[img.id] === 'gfpgan'
-                      ? 'GFPGAN feldolgozás...'
-                      : hasGfpgan
-                      ? 'Már van javított kép'
-                      : 'GFPGAN javítás'}
+                    {enhancingImage === img.id && loading[img.id] === 'gfpgan' ? (
+                      <span className="spinner">⏳</span>
+                    ) : hasGfpgan ? (
+                      'Már van javított kép'
+                    ) : (
+                      'GFPGAN javítás'
+                    )}
                   </button>
+
                   <button
                     onClick={() => triggerEnhancement(img.id, 'ddcolor')}
                     className="btn btn-enhance"
-                    disabled={loading[img.id] === 'ddcolor' || hasDdcolor}
+                    disabled={loading[img.id] === 'ddcolor' || hasDdcolor || enhancingImage !== null}
                   >
-                    {loading[img.id] === 'ddcolor'
-                      ? 'DDColor feldolgozás...'
-                      : hasDdcolor
-                      ? 'Már van színezett kép'
-                      : 'DDColor színezés'}
+                    {enhancingImage === img.id && loading[img.id] === 'ddcolor' ? (
+                      <span className="spinner">⏳</span>
+                    ) : hasDdcolor ? (
+                      'Már van színezett kép'
+                    ) : (
+                      'DDColor színezés'
+                    )}
                   </button>
                 </div>
               );

@@ -13,12 +13,12 @@ const Gallery = ({ user }) => {
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
   const [slideDirection, setSlideDirection] = useState('');
   const [isClosing, setIsClosing] = useState(false);
+  const [hoveredPostId, setHoveredPostId] = useState(null);
+  const [hoverTimer, setHoverTimer] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
-  /**
-   * Solicita comentariile pentru o anumită postare și le salvează în stare.
-   */
+  // Solicita comentariile pentru o anumită postare și le salvează în stare.
   const fetchComments = async (postId) => {
     try {
       const res = await axios.get(`/posts/${postId}/comments`, {
@@ -30,9 +30,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Solicită toate postările utilizatorului și le sortează după opțiune.
-   */
+  // Solicită toate postările utilizatorului și le sortează după opțiune.
   const fetchPosts = async () => {
     const [sort_by, order] = sortOption.split('-');
     const res = await axios.get('/my-posts', {
@@ -46,9 +44,7 @@ const Gallery = ({ user }) => {
     fetchPosts();
   }, [sortOption]);
 
-  /**
-   * Ascultă tastele pentru navigare stânga/dreapta și ieșire din mod galerie.
-   */
+  // Ascultă tastele pentru navigare stânga/dreapta și ieșire din mod galerie.
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (selectedPostIndex !== null) {
@@ -61,9 +57,7 @@ const Gallery = ({ user }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedPostIndex]);
 
-  /**
-   * Trimite un comentariu nou și reîncarcă comentariile.
-   */
+  // Trimite un comentariu nou și reîncarcă comentariile.
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
     if (!content) return;
@@ -78,9 +72,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Șterge un comentariu de la o postare dată.
-   */
+  // Șterge un comentariu de la o postare dată.
   const handleDeleteComment = async (commentId, postId) => {
     try {
       await axios.delete(`/comments/${commentId}`, {
@@ -92,9 +84,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Trimite imaginea pentru procesare AI (GFPGAN sau DDColor).
-   */
+  // Trimite imaginea pentru procesare AI (GFPGAN sau DDColor).
   const handleEnhance = async (postId, apiType) => {
     setLoading(prev => ({ ...prev, [postId]: apiType }));
     try {
@@ -109,9 +99,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Verifică periodic starea procesării AI și reîncarcă imaginile dacă a fost finalizată.
-   */
+  // Verifică periodic starea procesării AI și reîncarcă imaginile dacă a fost finalizată.
   const checkStatus = async (predictionId, postId) => {
     try {
       const res = await axios.post('/check-status', { prediction_id: predictionId }, {
@@ -127,17 +115,13 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Redirecționează către pagina de editare, luând în considerare imaginea AI sau originală.
-   */
+  // Redirecționează către pagina de editare, luând în considerare imaginea AI sau originală.
   const handleEdit = (post) => {
     const editId = post.ai_generated && post.parent_id ? post.parent_id : post.id;
     navigate(`/edit-gallery/${editId}`);
   };
 
-  /**
-   * Actualizează titlul și descrierea unei imagini.
-   */
+  // Actualizează titlul și descrierea unei imagini.
   const handleUpdate = async (postId) => {
     try {
       await axios.put(`/post/${postId}`, editedPost, {
@@ -150,9 +134,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Șterge definitiv o imagine din galerie.
-   */
+  // Șterge definitiv o imagine din galerie.
   const handleDelete = async (postId) => {
     if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
     try {
@@ -165,9 +147,7 @@ const Gallery = ({ user }) => {
     }
   };
 
-  /**
-   * Comută vizibilitatea publică a unei imagini.
-   */
+  // Comută vizibilitatea publică a unei imagini.
   const handleTogglePublic = async (postId) => {
     try {
       await axios.post('/toggle-public', { post_id: postId }, {
@@ -232,12 +212,43 @@ const Gallery = ({ user }) => {
       {/* Afișarea imaginilor din galerie */}
       <div className="gallery-grid">
         {posts.map((post, index) => (
-          <div key={post.id} className="post-card" onClick={() => {
-            setSelectedPostIndex(index);
-            fetchComments(post.id);
-          }}>
+          <div
+            key={post.id}
+            className={`post-card ${hoveredPostId === post.id ? 'hovered' : ''}`}
+            onMouseEnter={() => {
+              const timer = setTimeout(() => {
+                setHoveredPostId(post.id);
+              }, 1000);
+              setHoverTimer(timer);
+            }}
+            onMouseLeave={() => {
+              clearTimeout(hoverTimer);
+              setHoveredPostId(null);
+            }}
+            onClick={() => {
+              setSelectedPostIndex(index);
+              fetchComments(post.id);
+              setHoveredPostId(null);
+            }}
+          >
             {post.image ? (
-              <img src={post.image} alt={post.title} className="post-image" />
+              <>
+                <img src={post.image} alt={post.title} className="post-image" />
+                {hoveredPostId === post.id && (
+                  <div className="post-hover-info">
+                    <strong>{post.title}</strong>
+                    <br />
+                    <em>{new Date(post.created_at).toLocaleString('hu-HU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    })}</em>
+                  </div>
+                )}
+              </>
             ) : (
               <p className="no-image">Nincs kép</p>
             )}
@@ -260,6 +271,27 @@ const Gallery = ({ user }) => {
               onAnimationEnd={() => setSlideDirection('')}
             />
             <h3>{posts[selectedPostIndex].title}</h3>
+            <div className="post-meta-row">
+              <em className="post-date">
+                {new Date(posts[selectedPostIndex].created_at).toLocaleString('hu-HU', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                })}
+              </em>
+              <strong className="image-type-label">
+                {posts[selectedPostIndex].ai_generated
+                  ? posts[selectedPostIndex].ai_type === 'ddcolor'
+                    ? 'Színezett (DDColor)'
+                    : posts[selectedPostIndex].ai_type === 'gfpgan'
+                      ? 'Feljavított (GFPGAN)'
+                      : 'AI által generált'
+                  : 'Eredeti kép'}
+              </strong>
+            </div>
             <p>{posts[selectedPostIndex].content}</p>
             <button className="btn btn-edit" onClick={() => handleEdit(posts[selectedPostIndex])}>Szerkesztés</button>
             <h4>Kommentek:</h4>

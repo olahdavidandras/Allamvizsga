@@ -1002,3 +1002,53 @@ html, body {
   justify-content: center; 
   margin-top: 20px;
 }
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.post-card {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.post-card.hovered {
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+.post-hover-info {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.image-type-label {
+  margin-top: 0.2rem;
+  font-style: italic;
+  color: #15803d;
+}
+
+.post-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.post-date {
+  font-style: italic;
+}
+

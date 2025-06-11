@@ -9,12 +9,10 @@ const PublicGallery = () => {
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
   const [slideDirection, setSlideDirection] = useState('');
   const [isClosing, setIsClosing] = useState(false);
+  const [hoveredPostId, setHoveredPostId] = useState(null);
+  const [hoverTimer, setHoverTimer] = useState(null);
   const navigate = useNavigate();
 
-  /**
-   * Funcția solicită comentariile asociate unei postări.
-   * Salvează rezultatul în starea locală pentru afișare.
-   */
   const fetchComments = async (postId) => {
     const token = localStorage.getItem('token');
     try {
@@ -30,9 +28,6 @@ const PublicGallery = () => {
     }
   };
 
-  /**
-   * Funcția încarcă toate postările publice și apelează fetchComments pentru fiecare.
-   */
   const fetchPublicPosts = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -49,14 +44,10 @@ const PublicGallery = () => {
     }
   };
 
-  // La montarea componentei, se încarcă postările publice
   useEffect(() => {
     fetchPublicPosts();
   }, []);
 
-  /**
-   * Ascultă evenimentele tastaturii pentru navigare și închidere în mod modal.
-   */
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (selectedPostIndex !== null) {
@@ -69,10 +60,6 @@ const PublicGallery = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedPostIndex]);
 
-  /**
-   * Funcția adaugă un comentariu nou la o postare.
-   * După trimitere, câmpul se golește și se reîncarcă comentariile.
-   */
   const handleAddComment = async (postId) => {
     const content = newComments[postId];
     if (!content) return;
@@ -91,11 +78,7 @@ const PublicGallery = () => {
       console.error('Eroare la trimiterea comentariului:', err);
     }
   };
-  
 
-  /**
-   * Navighează la imaginea anterioară în modul galerie.
-   */
   const handlePrev = () => {
     if (selectedPostIndex > 0) {
       const newIndex = selectedPostIndex - 1;
@@ -105,9 +88,6 @@ const PublicGallery = () => {
     }
   };
 
-  /**
-   * Navighează la imaginea următoare în modul galerie.
-   */
   const handleNext = () => {
     if (selectedPostIndex < posts.length - 1) {
       const newIndex = selectedPostIndex + 1;
@@ -117,9 +97,6 @@ const PublicGallery = () => {
     }
   };
 
-  /**
-   * Închide vizualizarea detaliată (modal).
-   */
   const handleCloseModal = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -144,14 +121,40 @@ const PublicGallery = () => {
         {posts.map((post, index) => (
           <div
             key={post.id}
-            className="post-card"
+            className={`post-card ${hoveredPostId === post.id ? 'hovered' : ''}`}
+            onMouseEnter={() => {
+              const timer = setTimeout(() => {
+                setHoveredPostId(post.id);
+              }, 1000);
+              setHoverTimer(timer);
+            }}
+            onMouseLeave={() => {
+              clearTimeout(hoverTimer);
+              setHoveredPostId(null);
+            }}
             onClick={() => {
               setSelectedPostIndex(index);
               fetchComments(post.id);
             }}
           >
             {post.image ? (
-              <img src={post.image} alt={post.title} className="post-image" />
+              <>
+                <img src={post.image} alt={post.title} className="post-image" />
+                {hoveredPostId === post.id && (
+                  <div className="post-hover-info">
+                    <strong>{post.title}</strong>
+                    <br />
+                    <em>{new Date(post.created_at).toLocaleString('hu-HU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    })}</em>
+                  </div>
+                )}
+              </>
             ) : (
               <p className="no-image">Nincs kép</p>
             )}
@@ -161,10 +164,7 @@ const PublicGallery = () => {
 
       {selectedPostIndex !== null && posts[selectedPostIndex] && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div
-            className={`modal-content ${isClosing ? 'modal-fade-out' : 'modal-fade-in'}`}
-            onClick={e => e.stopPropagation()}
-          >
+          <div className={`modal-content ${isClosing ? 'modal-fade-out' : 'modal-fade-in'}`} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={handleCloseModal}>×</button>
             <button className="modal-nav modal-prev" onClick={handlePrev} disabled={selectedPostIndex === 0}>◀</button>
             <button className="modal-nav modal-next" onClick={handleNext} disabled={selectedPostIndex === posts.length - 1}>▶</button>
@@ -176,6 +176,27 @@ const PublicGallery = () => {
               onAnimationEnd={() => setSlideDirection('')}
             />
             <h3>{posts[selectedPostIndex].title}</h3>
+            <div className="post-meta-row">
+              <em className="post-date">
+                {new Date(posts[selectedPostIndex].created_at).toLocaleString('hu-HU', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit'
+                })}
+              </em>
+              <strong className="image-type-label">
+                {posts[selectedPostIndex].ai_generated
+                  ? posts[selectedPostIndex].ai_type === 'ddcolor'
+                    ? 'Színezett (DDColor)'
+                    : posts[selectedPostIndex].ai_type === 'gfpgan'
+                      ? 'Feljavított (GFPGAN)'
+                      : 'AI által generált'
+                  : 'Eredeti kép'}
+              </strong>
+            </div>
             <p>{posts[selectedPostIndex].content}</p>
             <h4>Kommentek:</h4>
             {comments[posts[selectedPostIndex].id]?.length ? (
@@ -184,11 +205,7 @@ const PublicGallery = () => {
                   <li key={c.id} className="comment-item">
                     <div className="comment-main">
                       {c.user?.profile?.profile_picture ? (
-                        <img
-                          src={c.user.profile.profile_picture}
-                          alt={c.user.name}
-                          className="comment-avatar"
-                        />
+                        <img src={c.user.profile.profile_picture} alt={c.user.name} className="comment-avatar" />
                       ) : (
                         <div className="comment-avatar fallback">
                           {c.user?.name?.[0]?.toUpperCase() ?? '?'}
@@ -210,20 +227,10 @@ const PublicGallery = () => {
                 type="text"
                 placeholder="Új komment..."
                 value={newComments[posts[selectedPostIndex].id] || ''}
-                onChange={(e) =>
-                  setNewComments(prev => ({
-                    ...prev,
-                    [posts[selectedPostIndex].id]: e.target.value
-                  }))
-                }
+                onChange={(e) => setNewComments(prev => ({ ...prev, [posts[selectedPostIndex].id]: e.target.value }))}
                 className="new-comment-input"
               />
-              <button
-                onClick={() => handleAddComment(posts[selectedPostIndex].id)}
-                className="btn btn-comment"
-              >
-                Küldés
-              </button>
+              <button onClick={() => handleAddComment(posts[selectedPostIndex].id)} className="btn btn-comment">Küldés</button>
             </div>
           </div>
         </div>
