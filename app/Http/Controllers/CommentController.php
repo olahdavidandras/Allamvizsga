@@ -60,13 +60,9 @@ class CommentController extends Controller
      * @param int $postId
      * @return JsonResponse
      */
-    public function getPostComments($postId): JsonResponse
+    public function getPostComments(int $postId): JsonResponse
     {
-        $comments = Comment::where('post_id', $postId)
-            ->with(['user.profile'])
-            ->latest()
-            ->get();
-
+        $comments = $this->commentRepository->getPostComments($postId);
         return response()->json($comments);
     }
 
@@ -76,13 +72,9 @@ class CommentController extends Controller
      * @param int $userId
      * @return JsonResponse
      */
-    public function getUserComments($userId): JsonResponse
+    public function getUserComments(int $userId): JsonResponse
     {
-        $comments = Comment::where('user_id', $userId)
-            ->with(['user.profile'])
-            ->latest()
-            ->get();
-
+        $comments = $this->commentRepository->getUserComments($userId);
         return response()->json($comments);
     }
 }

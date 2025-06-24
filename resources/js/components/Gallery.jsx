@@ -84,79 +84,10 @@ const Gallery = ({ user }) => {
     }
   };
 
-  // Trimite imaginea pentru procesare AI (GFPGAN sau DDColor).
-  const handleEnhance = async (postId, apiType) => {
-    setLoading(prev => ({ ...prev, [postId]: apiType }));
-    try {
-      const res = await axios.post('/enhance', { image_id: postId, api_type: apiType }, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      await checkStatus(res.data.prediction_id, postId);
-    } catch (err) {
-      console.error(`Hiba az ${apiType} feldolgozáskor:`, err);
-    } finally {
-      setLoading(prev => ({ ...prev, [postId]: null }));
-    }
-  };
-
-  // Verifică periodic starea procesării AI și reîncarcă imaginile dacă a fost finalizată.
-  const checkStatus = async (predictionId, postId) => {
-    try {
-      const res = await axios.post('/check-status', { prediction_id: predictionId }, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      if (res.data.status === 'processing') {
-        setTimeout(() => checkStatus(predictionId, postId), 3000);
-      } else if (res.data.image_url) {
-        fetchPosts();
-      }
-    } catch (err) {
-      console.error('Hiba a státusz lekérdezésnél:', err);
-    }
-  };
-
   // Redirecționează către pagina de editare, luând în considerare imaginea AI sau originală.
   const handleEdit = (post) => {
     const editId = post.ai_generated && post.parent_id ? post.parent_id : post.id;
     navigate(`/edit-gallery/${editId}`);
-  };
-
-  // Actualizează titlul și descrierea unei imagini.
-  const handleUpdate = async (postId) => {
-    try {
-      await axios.put(`/post/${postId}`, editedPost, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      setEditMode(null);
-      fetchPosts();
-    } catch (err) {
-      console.error('Hiba a módosítás során:', err);
-    }
-  };
-
-  // Șterge definitiv o imagine din galerie.
-  const handleDelete = async (postId) => {
-    if (!window.confirm('Biztosan törölni szeretnéd ezt a képet?')) return;
-    try {
-      await axios.delete(`/post/${postId}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      fetchPosts();
-    } catch (err) {
-      console.error('Hiba a törlés során:', err);
-    }
-  };
-
-  // Comută vizibilitatea publică a unei imagini.
-  const handleTogglePublic = async (postId) => {
-    try {
-      await axios.post('/toggle-public', { post_id: postId }, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      });
-      fetchPosts();
-    } catch (err) {
-      console.error('Hiba a megosztás módosításakor:', err);
-    }
   };
 
   const handlePrev = () => {

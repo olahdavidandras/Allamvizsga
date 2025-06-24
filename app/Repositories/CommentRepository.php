@@ -33,7 +33,7 @@ class CommentRepository
      */
     public function getPostComments($postId)
     {
-        return Comment::where('post_id', $postId)->with('user:id,name')->get();
+        return Comment::where('post_id', $postId)->with('user:id,name','user.profile:id,user_id,profile_picture')->get();
     }
 
     /**
